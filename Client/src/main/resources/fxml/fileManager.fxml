@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="640.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="FileManagerController">
+   <children>
+      <Pane prefHeight="640.0" prefWidth="200.0" style="-fx-background-color: #4567E5;">
+         <children>
+            <ImageView fitHeight="77.0" fitWidth="83.0" layoutX="62.0" layoutY="472.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/cloude.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="37.0" layoutY="555.0" prefHeight="28.0" prefWidth="138.0" text="Clouds Storage" textFill="WHITE">
+               <font>
+                  <Font name="System Bold Italic" size="19.0" />
+               </font>
+            </Label>
+            <Label layoutX="89.0" layoutY="592.0" text="2022" textFill="WHITE" />
+            <ImageView fitHeight="150.0" fitWidth="200.0" layoutY="137.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/Store_back.png" />
+               </image>
+            </ImageView>
+         </children>
+      </Pane>
+      <AnchorPane focusTraversable="true" layoutX="200.0" layoutY="100.0" prefHeight="440.0" prefWidth="400.0">
+         <children>
+            <ScrollPane fx:id="clientsFilesScroll" prefHeight="440.0" prefWidth="400.0" />
+         </children>
+      </AnchorPane>
+      <AnchorPane focusTraversable="true" layoutX="599.0" layoutY="100.0" prefHeight="440.0" prefWidth="400.0">
+         <children>
+            <ScrollPane fx:id="serverFilesScroll" focusTraversable="false" prefHeight="440.0" prefWidth="400.0">
+               <cursor>
+                  <Cursor fx:constant="DEFAULT" />
+               </cursor>
+            </ScrollPane>
+         </children>
+      </AnchorPane>
+      <Pane layoutX="200.0" prefHeight="100.0" prefWidth="400.0">
+         <children>
+            <HBox layoutY="74.0" prefHeight="26.0" prefWidth="396.0">
+               <children>
+                  <TextField fx:id="fieldUserDir" editable="false" focusTraversable="false" prefHeight="26.0" prefWidth="330.0">
+                     <HBox.margin>
+                        <Insets bottom="5.0" right="5.0" top="1.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Button fx:id="butUserDir" mnemonicParsing="false" onAction="#onButtonUserDir" prefHeight="25.0" prefWidth="67.0" text="Top Dir" />
+               </children>
+            </HBox>
+            <Label layoutX="4.0" layoutY="56.0" prefHeight="17.0" prefWidth="329.0" text="Current user directory" />
+         </children>
+      </Pane>
+      <Button fx:id="butUpload" layoutX="279.0" layoutY="574.0" mnemonicParsing="false" onAction="#onButtonUpload" prefHeight="31.0" prefWidth="130.0" text="Upload" />
+      <Button disable="true" layoutX="453.0" layoutY="574.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="130.0" text="Download" />
+      <Button disable="true" layoutX="799.0" layoutY="574.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="130.0" text="MakeDir" />
+      <Button disable="true" layoutX="626.0" layoutY="574.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="130.0" text="Delete" />
+      <Pane layoutX="601.0" prefHeight="100.0" prefWidth="399.0">
+         <children>
+            <HBox layoutY="74.0" prefHeight="26.0" prefWidth="400.0">
+               <children>
+                  <TextField fx:id="fieldServerDir" editable="false" focusTraversable="false" prefHeight="26.0" prefWidth="398.0">
+                     <HBox.margin>
+                        <Insets bottom="5.0" right="5.0" top="1.0" />
+                     </HBox.margin>
+                  </TextField>
+               </children>
+            </HBox>
+            <Label layoutX="4.0" layoutY="56.0" prefHeight="17.0" prefWidth="329.0" text="Current server directory" />
+         </children>
+      </Pane>
+   </children>
+</AnchorPane>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="RegisterController">
+   <children>
+      <Pane prefHeight="400.0" prefWidth="200.0" style="-fx-background-color: #4567E5;">
+         <children>
+            <ImageView fitHeight="124.0" fitWidth="152.0" layoutX="24.0" layoutY="52.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/register.png" />
+               </image>
+            </ImageView>
+         </children>
+      </Pane>
+      <ImageView fitHeight="77.0" fitWidth="83.0" layoutX="62.0" layoutY="232.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../img/cloude.png" />
+         </image>
+      </ImageView>
+      <Label layoutX="32.0" layoutY="317.0" prefHeight="28.0" prefWidth="138.0" text="Clouds Storage" textFill="WHITE">
+         <font>
+            <Font name="System Bold Italic" size="19.0" />
+         </font>
+      </Label>
+      <Label layoutX="87.0" layoutY="352.0" text="2022" textFill="WHITE" />
+      <Pane layoutX="200.0" prefHeight="400.0" prefWidth="400.0">
+         <children>
+            <ImageView fitHeight="62.0" fitWidth="63.0" layoutX="169.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/user.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="137.0" layoutY="80.0" prefHeight="38.0" prefWidth="138.0" text="REGISTER" textFill="#4567e5">
+               <font>
+                  <Font name="Times New Roman Bold" size="25.0" />
+               </font>
+            </Label>
+            <TextField fx:id="fieldNick" layoutX="97.0" layoutY="132.0" prefHeight="25.0" prefWidth="217.0" promptText="NickName" />
+            <TextField fx:id="fieldEmail" layoutX="98.0" layoutY="176.0" prefHeight="25.0" prefWidth="217.0" promptText="Email" />
+            <PasswordField fx:id="fieldFirstPass" layoutX="98.0" layoutY="220.0" prefHeight="25.0" prefWidth="217.0" promptText="Password" />
+            <PasswordField fx:id="fieldSecondPass" layoutX="98.0" layoutY="263.0" prefHeight="25.0" prefWidth="217.0" promptText="Password" />
+            <Button fx:id="buttonRegister" layoutX="97.0" layoutY="321.0" mnemonicParsing="false" onAction="#onButtonRegister" prefHeight="44.0" prefWidth="217.0" style="-fx-background-color: #4567E5;" text="Register" textFill="WHITE">
+               <font>
+                  <Font size="20.0" />
+               </font>
+            </Button>
+            <Label layoutX="27.0" layoutY="222.0" text="Password" textAlignment="RIGHT" textFill="#4567e5">
+               <font>
+                  <Font name="System Italic" size="15.0" />
+               </font>
+            </Label>
+            <Label layoutX="25.0" layoutY="264.0" text="Password" textAlignment="RIGHT" textFill="#4567e5">
+               <font>
+                  <Font name="System Italic" size="15.0" />
+               </font>
+            </Label>
+            <Label layoutX="18.0" layoutY="134.0" text="NickName" textAlignment="RIGHT" textFill="#4567e5">
+               <font>
+                  <Font name="System Italic" size="15.0" />
+               </font>
+            </Label>
+            <Label layoutX="49.0" layoutY="178.0" text="Email" textAlignment="RIGHT" textFill="#4567e5">
+               <font>
+                  <Font name="System Italic" size="15.0" />
+               </font>
+            </Label>
+            <Label layoutX="116.0" layoutY="370.0" prefHeight="17.0" prefWidth="125.0" text="Do you have account?" />
+            <Label fx:id="labLogin" alignment="CENTER" contentDisplay="CENTER" layoutX="250.0" layoutY="369.0" prefHeight="19.0" prefWidth="45.0" text="Login." textAlignment="CENTER" textFill="#051772">
+               <font>
+                  <Font name="System Bold Italic" size="13.0" />
+               </font>
+            </Label>
+         </children>
+      </Pane>
+   </children>
+</AnchorPane>

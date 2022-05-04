@@ -1,7 +1,11 @@
 import io.netty.channel.ChannelHandlerContext;
 import javafx.application.Platform;
+import model.FileModel;
 
-import java.util.Map;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 // Класс обработчика выполняемых команд после получения ответов от сервера
 public class ClientExecutor {
@@ -14,6 +18,7 @@ public class ClientExecutor {
                 return StateChannelRead.WAIT_META_DATA;
 
             case LOGIN:
+                System.out.println("Login");
                 res = params.get("result");
                 if("successful".equals(res)){
                     Platform.runLater(mainApp::showFileManager);
@@ -30,8 +35,61 @@ public class ClientExecutor {
                     Platform.runLater(mainApp::showFileManager);
                 }
                 return StateChannelRead.WAIT_META_DATA;
+
+            case FILE_LIST:
+                final String  curDir = params.get("path");
+                if(curDir.length() > 0) {
+                    Platform.runLater(() -> {
+                                mainApp.getFileManagerController().setMyRepoPath(Path.of(curDir));
+                            });
+                    res = params.get("list");
+                    boolean isDir;
+                    List<FileModel> listDir = new ArrayList<>();
+                    Map<String, String> filesList = new HashMap<>();
+                    if(res != null) {
+                        if(curDir.contains(File.separator)){
+                            listDir.add(new FileModel("...",
+                                    "img"+ File.separator + "up.png", true, true, false));
+                        }
+                        String[] keyValueParamsArray = res.split("&");
+                        for (String rawKeyValue : keyValueParamsArray) {
+                            String[] keyValueArr = rawKeyValue.split(":");
+                            if (keyValueArr.length > 1) {
+                                filesList.put(keyValueArr[0], keyValueArr[1]);
+                                isDir = "d".equals(keyValueArr[1]);
+                                listDir.add(new FileModel(keyValueArr[0], getIcon(isDir), isDir, false, false));
+                            }
+                        }
+                    }
+                    else{
+                        listDir.add(new FileModel("...",
+                                "img"+ File.separator + "up.png", true, true, false));
+                    }
+                    Platform.runLater(() -> {
+                        List<FileModel> sortedList = new ArrayList<>();
+                        mainApp.getFileManagerController().initServerListFiles(sortingListFile(listDir, sortedList));
+                    });
+                }
+
+                return StateChannelRead.WAIT_META_DATA;
         }
         return StateChannelRead.WAIT_META_DATA;
+    }
+
+     public static List<FileModel> sortingListFile(List<FileModel> list, List<FileModel> sortedList){
+
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).isDir()) {
+                sortedList.add(list.get(i));
+                list.remove(i--);
+            }
+        }
+        for (int i = 0; i < list.size(); i++) {
+            sortedList.add(list.get(i));
+            list.remove(i--);
+        }
+
+        return sortedList;
     }
 
     // Определение типа принятой от сервера команды
@@ -39,6 +97,13 @@ public class ClientExecutor {
         String com = params.get("command");
         if ("login".equals(com)) return CommandType.LOGIN;
         else if ("signup".equals(com)) return CommandType.SIGN_UP;
+        else if ("filelist".equals(com)) return CommandType.FILE_LIST;
         else return CommandType.NONE;
+    }
+
+    private static String getIcon(boolean isDir) {
+        if (isDir) {
+            return "img" + File.separator + "folder.png";
+        } else return "img" + File.separator + "file.png";
     }
 }

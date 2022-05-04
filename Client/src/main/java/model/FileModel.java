@@ -5,8 +5,9 @@ public class FileModel {
     private String iconURL;
     private boolean isDir;
     private boolean isUpperDir;
+    private boolean isSelect;
 
-    public FileModel(String fileName, String iconURL, boolean dir, boolean isUpperDir) {
+    public FileModel(String fileName, String iconURL, boolean dir, boolean isUpperDir, boolean isSelect) {
         this.fileName = fileName;
         this.iconURL = iconURL;
         this.isDir = dir;
@@ -27,5 +28,13 @@ public class FileModel {
 
     public boolean isUpperDir() {
         return isUpperDir;
+    }
+
+    public boolean isSelect() {
+        return isSelect;
+    }
+
+    public void setSelect(boolean select) {
+        isSelect = select;
     }
 }

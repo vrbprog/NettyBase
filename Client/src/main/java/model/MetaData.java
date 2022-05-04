@@ -7,14 +7,6 @@ public class MetaData {
 
     private Map<String, String> metadataParams;
 
-    public Map<String, String> getMetadataParams() {
-        return metadataParams;
-    }
-
-    public boolean isMetadataLoaded() {
-        return metadataParams != null;
-    }
-
     public void buildMetadata(String rawMetadata) {
         Map<String, String> metadataParams = new HashMap<>();
         String[] keyValueParamsArray = rawMetadata.split(",");
@@ -27,6 +19,14 @@ public class MetaData {
         if (!metadataParams.isEmpty()) {
             this.metadataParams = metadataParams;
         }
+    }
+
+    public Map<String, String> getMetadataParams() {
+        return metadataParams;
+    }
+
+    public boolean isMetadataLoaded() {
+        return metadataParams != null;
     }
 
 }

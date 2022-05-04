@@ -56,19 +56,19 @@ public class NettyClient implements Runnable{
         channel.writeAndFlush(command);
     }
 
-    public void sendFile(){
-//        sendCommand("<command=upload,name=test.txt,size=4>");
+    public void sendFile(String fileName){
 
         //TODO Write selected file
-//        byte[] mas = new byte[0];
-//        try {
-//            mas = Files.readAllBytes(Path.of("fromFile.txt"));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        ByteBuf outBuffer = channel.alloc().buffer();
-//        outBuffer.writeBytes(mas);
-//        channel.writeAndFlush(outBuffer);
+        byte[] mas = new byte[0];
+        try {
+            mas = Files.readAllBytes(Path.of(fileName));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ByteBuf outBuffer = channel.alloc().buffer();
+        outBuffer.writeBytes(mas);
+        channel.writeAndFlush(outBuffer);
 
     }
 

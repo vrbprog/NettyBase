@@ -54,7 +54,7 @@
                         <Insets bottom="5.0" right="5.0" top="1.0" />
                      </HBox.margin>
                   </TextField>
-                  <Button fx:id="butUserDir" mnemonicParsing="false" onAction="#onButtonUserDir" prefHeight="25.0" prefWidth="67.0" text="Top Dir" />
+                  <Button fx:id="butUserDir" mnemonicParsing="false" onAction="#onButtonUserDir" prefHeight="25.0" prefWidth="67.0" text="Set Dir" />
                </children>
             </HBox>
             <Label layoutX="4.0" layoutY="56.0" prefHeight="17.0" prefWidth="329.0" text="Current user directory" />

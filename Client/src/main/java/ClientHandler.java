@@ -9,7 +9,6 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     private static final char START_META_DATA = '<';
     private static final char END_META_DATA = '>';
     private MainApp mainApp;
-    private MetaData metaData;
     private StateChannelRead stateChannelRead = StateChannelRead.WAIT_META_DATA;
 
     public ClientHandler(MainApp mainApp) {
@@ -25,31 +24,34 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
         ByteBuf buffer = (ByteBuf) msg;
-        StringBuffer stringBuffer = new StringBuffer();
+        StringBuilder stringBuffer = new StringBuilder();
+        MetaData metaData = new MetaData();
         char nextChar = 0;
 
-        switch (stateChannelRead) {
-            case WAIT_META_DATA:
-                while (buffer.isReadable() && ((char) buffer.readByte() != START_META_DATA)) ;
-                stateChannelRead = StateChannelRead.READING_META_DATA;
-                metaData = new MetaData();
+        while((buffer.isReadable())) {
+            switch (stateChannelRead) {
+                case WAIT_META_DATA:
+                    while (buffer.isReadable() && ((char) buffer.readByte() != START_META_DATA));
+                    stateChannelRead = StateChannelRead.READING_META_DATA;
 
-            case READING_META_DATA:
-                while (buffer.isReadable() && (nextChar = (char) buffer.readByte()) != END_META_DATA) {
-                    stringBuffer.append(nextChar);
-                }
+                case READING_META_DATA:
+                    while (buffer.isReadable() && (nextChar = (char) buffer.readByte()) != END_META_DATA) {
+                        stringBuffer.append(nextChar);
+                    }
 
-                metaData.buildMetadata(stringBuffer.toString());
-                if (metaData.isMetadataLoaded()) {
-                    stateChannelRead = ClientExecutor.Execute(metaData.getMetadataParams(), ctx, mainApp);
-                } else {
+                    metaData.buildMetadata(stringBuffer.toString());
+                    if (metaData.isMetadataLoaded()) {
+                        stateChannelRead = ClientExecutor.Execute(metaData.getMetadataParams(), ctx, mainApp);
+                    } else {
+                        stateChannelRead = StateChannelRead.WAIT_META_DATA;
+                    }
+                    stringBuffer.delete(0, stringBuffer.length());
+                    break;
+
+                default:
                     stateChannelRead = StateChannelRead.WAIT_META_DATA;
-                }
-                break;
 
-            default:
-                stateChannelRead = StateChannelRead.WAIT_META_DATA;
-
+            }
         }
     }
 }

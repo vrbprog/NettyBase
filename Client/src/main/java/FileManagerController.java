@@ -14,6 +14,7 @@ import model.FileModel;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -25,6 +26,11 @@ public class FileManagerController implements Initializable {
     private MainApp mainApp;
     private Path myPath;
     private Path upLimitPath;
+    private Path myRepoPath;
+    private List<FileModel> currentClientDir;
+    private List<FileModel> currentServerDir;
+    private Node[] clientsNodes;
+    private Node[] serverNodes;
 
     @FXML
     private ScrollPane clientsFilesScroll;
@@ -58,8 +64,21 @@ public class FileManagerController implements Initializable {
     }
 
     @FXML
-    void onButtonUpload(ActionEvent event) {
-        System.out.println(clientsFilesScroll.isFocused());
+    void onButtonUpload(ActionEvent event) throws IOException {
+        for (int i = 0; i < currentClientDir.size(); i++) {
+            if(currentClientDir.get(i).isSelect()){
+                if(!currentClientDir.get(i).isDir()){
+
+                        mainApp.getClient().sendCommand(String.format("<command=upload,path=%s,size=%d>",
+                                myRepoPath + File.separator + currentClientDir.get(i).getFileName(),
+                                Files.size(Path.of(myPath.toAbsolutePath() + File.separator + currentClientDir.get(i).getFileName()))));
+
+                    mainApp.getClient().sendFile(myPath.toAbsolutePath() + File.separator + currentClientDir.get(i).getFileName());
+                }
+                currentClientDir.get(i).setSelect(false);
+                clientsNodes[i].setStyle("-fx-background-color:  #FFFFFF");
+            }
+        }
     }
 
     public void setMainApp(MainApp mainApp) {
@@ -83,27 +102,16 @@ public class FileManagerController implements Initializable {
         String[] filesList = f.list();
 
         List<FileModel> unsortedDir = new ArrayList<>();
+
         List<FileModel> sortedDir = new ArrayList<>();
         if (!isTop && (!upLimitPath.equals(path))) {
-            sortedDir.add(new FileModel("...", "img/up.png", true, true));
+            sortedDir.add(new FileModel("...", "img/up.png", true, true, false));
         }
 
         for (String s : filesList) {
-            unsortedDir.add(new FileModel(s, getIcon(path, s), checkDir(path, s), false));
+            unsortedDir.add(new FileModel(s, getIcon(path, s), checkDir(path, s), false, false));
         }
-
-        for (int i = 0; i < unsortedDir.size(); i++) {
-            if (unsortedDir.get(i).isDir()) {
-                sortedDir.add(unsortedDir.get(i));
-                unsortedDir.remove(i--);
-            }
-        }
-        for (int i = 0; i < unsortedDir.size(); i++) {
-            sortedDir.add(unsortedDir.get(i));
-            unsortedDir.remove(i--);
-        }
-
-        return sortedDir;
+        return ClientExecutor.sortingListFile(unsortedDir, sortedDir);
     }
 
     private boolean checkDir(Path path, String name) {
@@ -117,14 +125,15 @@ public class FileManagerController implements Initializable {
     }
 
     private void initClientListFiles(List<FileModel> list) {
-        initListFiles(clientsFilesScroll, list);
+        currentClientDir = list;
+        initListFiles(clientsFilesScroll, list, false);
     }
 
-    private void initServerListFiles(List<FileModel> list) {
-        initListFiles(serverFilesScroll, list);
+    public void initServerListFiles(List<FileModel> list) {
+        initListFiles(serverFilesScroll, list, true);
     }
 
-    private void initListFiles(ScrollPane scroll, List<FileModel> list) {
+    private void initListFiles(ScrollPane scroll, List<FileModel> list, boolean isServerList) {
 
         boolean[] select = new boolean[list.size()];
         AnchorPane clientsPane = new AnchorPane();
@@ -173,23 +182,51 @@ public class FileManagerController implements Initializable {
             nodes[i].setOnMousePressed(mouseEvent -> {
                 if (!select[j]) {
                     nodes[j].setStyle("-fx-background-color:  #7EA9FF");
+                    list.get(j).setSelect(true);
                 } else {
                     nodes[j].setStyle("-fx-background-color:  #FFFFFF");
+                    list.get(j).setSelect(false);
                 }
                 select[j] = !select[j];
             });
             nodes[i].setOnMouseClicked(MouseEvent -> {
                 if (MouseEvent.getClickCount() % 2 == 0) {
-                    if (checkDir(myPath, list.get(j).getFileName())) {
-                        if (!list.get(j).isUpperDir()) {
-                            myPath = Path.of(myPath.toString() + File.separator + list.get(j).getFileName());
-                            fieldUserDir.setText(myPath.toAbsolutePath().toString());
-                            initClientListFiles(getListFiles(myPath, false));
-                        } else {
-                            int endPath = myPath.toAbsolutePath().toString().lastIndexOf(File.separator);
-                            myPath = Path.of(myPath.toAbsolutePath().toString().substring(0, endPath));
-                            fieldUserDir.setText(myPath.toAbsolutePath().toString());
-                            initClientListFiles(getListFiles(myPath, false));
+                    if (list.get(j).isDir()) {
+                        //if (checkDir(myPath, list.get(j).getFileName())) {
+                        // Обрабатываем клик на строке с директорией на клиентской файловой системе
+                        if (!isServerList) {
+                            // Возвращаемся в родительскую директорию
+                            if (list.get(j).isUpperDir()) {
+                                int endPath = myPath.toAbsolutePath().toString().lastIndexOf(File.separator);
+                                if(endPath > 0) {
+                                    myPath = Path.of(myPath.toAbsolutePath().toString().substring(0, endPath));
+                                    fieldUserDir.setText(myPath.toAbsolutePath().toString());
+                                    initClientListFiles(getListFiles(myPath, false));
+                                }
+                            }
+                            // Открываем директорию в пользовательском каталоге
+                            else {
+                                myPath = Path.of(myPath.toString() + File.separator + list.get(j).getFileName());
+                                fieldUserDir.setText(myPath.toAbsolutePath().toString());
+                                initClientListFiles(getListFiles(myPath, false));
+                            }
+                        }
+                        // Обрабатываем клик на строке с директорией в репозитории клиента
+                        else {
+                            // Открываем директоррию в репозитории
+                            if (!list.get(j).isUpperDir()) {
+                                mainApp.getClient().sendCommand(String.format("<command=getlist,path=%s>",
+                                        myRepoPath + File.separator + list.get(j).getFileName()));
+                            }
+                            // Переходим в родительскую директорию в репозитории
+                            else {
+                                int endPath = myRepoPath.toString().lastIndexOf(File.separator);
+                                if(endPath > 0) {
+                                    Path myParentRepo = Path.of(myRepoPath.toString().substring(0, endPath));
+                                    mainApp.getClient().sendCommand(String.format("<command=getlist,path=%s>",
+                                            myParentRepo.toString()));
+                                }
+                            }
                         }
                     }
                 }
@@ -200,5 +237,15 @@ public class FileManagerController implements Initializable {
 
         clientsPane.getChildren().add(vBoxClientsFiles);
         scroll.setContent(clientsPane);
+        if(isServerList){
+            serverNodes = nodes;
+        } else {
+            clientsNodes = nodes;
+        }
+    }
+
+    public void setMyRepoPath(Path myRepoPath) {
+        this.myRepoPath = myRepoPath;
+        fieldServerDir.setText(myRepoPath.toString());
     }
 }

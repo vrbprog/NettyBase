@@ -33,18 +33,19 @@ public class CommandExecutor {
                         if (res.next()) {
                             // Выборка из
                             user.setName(res.getString(ConfigDB.USER_NAME));
-                            log("User " + user.getName() + " login on server",
-                                    "<command=login,result=successful>", ctx, user);
-                            //TODO Trance Top User directory
+                            log("User " + user.getName() + " login on server", user);
+                            sendAnswerToClient(ctx, "<command=login,result=successful>");
+                                    //+ createUserListRepository(user.getName()));
+                            sendAnswerToClient(ctx, createUserListRepository(user.getName()));
                         // Отсутствие пользователя с введенными параметрами в БД
                         } else {
-                            log("User with define params not fined",
-                                    "<command=login,result=user_not_fined>", ctx, user);
+                            log("User with define params not fined", user);
+                            sendAnswerToClient(ctx, "<command=login,result=user_not_fined>");
                         }
                     // Отсутствие полей для логирования в метаданных
                     } else {
-                        log("Not define authorisation params",
-                                "<command=login,result=not_define_authorisation_params>", ctx, user);
+                        log("Not define authorisation params", user);
+                        sendAnswerToClient(ctx, "<command=login,result=not_define_authorisation_params>");
                     }
                     return StateChannelRead.WAIT_META_DATA;
 
@@ -55,19 +56,19 @@ public class CommandExecutor {
                         res = db.CheckUserName(user.getName());
                         // Проверка на наличие пользователя с данным именем
                         if (res.next()) {
-                            log("SignUp: User name " + "\"" + user.getName() + "\"" + " is already in the database",
-                                    "<command=signup,result=busy_name>", ctx, user);
+                            log("SignUp: User name " + "\"" + user.getName() + "\"" + " is already in the database", user);
+                            sendAnswerToClient(ctx, "<command=signup,result=busy_name>");
                         } else {
                             res = db.CheckUserEmail(user.getEmail());
                             // Проверка на наличие пользователя с данным имейлом
                             if (res.next()) {
-                                log("SignUp: User email " + "\"" + user.getEmail() + "\"" + " is already in the database",
-                                        "<command=signup,result=busy_email>", ctx, user);
+                                log("SignUp: User email " + "\"" + user.getEmail() + "\"" + " is already in the database", user);
+                                sendAnswerToClient(ctx, "<command=signup,result=busy_email>");
                             }
                             // Успешная регистрация пользователя
                             else {
-                                log("SignUp: User " + "\"" + user.getName() + "\"" + " registered in the database",
-                                        "<command=signup,result=successful>", ctx, user);
+                                log("SignUp: User " + "\"" + user.getName() + "\"" + " registered in the database", user);
+                                sendAnswerToClient(ctx, "<command=signup,result=successful>");
 
                                 db.insertUserToBase(user); // Внесение пользователя в БД
                                 createRepository(user.getName()); // Выделение пользователю места на сервере
@@ -78,13 +79,41 @@ public class CommandExecutor {
 
                 // Команда загрузки файла на сервер
                 case UP_LOAD:
+                    log("User " + user.getName() + " upload file "
+                            + params.get("path") + " on Serer", user);
+                    return StateChannelRead.CREATE_FILE;
 
-                    return StateChannelRead.READING_FILE;
+
+                case GET_LIST:
+                    sendAnswerToClient(ctx, createUserListRepository(params.get("path")));
+                    return StateChannelRead.WAIT_META_DATA;
             }
         } catch (SQLException throwable) {
             throwable.printStackTrace();
         }
         return StateChannelRead.WAIT_META_DATA;
+    }
+
+    // Создание листа корневого каталога клиента
+    public static String createUserListRepository(String repoPath) {
+        final String SERVER_DIR = "Server" + File.separator + "Repositories" + File.separator;
+        Path myPath = Path.of(SERVER_DIR + repoPath);
+
+        File f = new File(myPath.toAbsolutePath().toString());
+        String[] filesList = f.list();
+
+        StringBuffer stringBuffer = new StringBuffer();
+        for (int i = 0; i < filesList.length; i++) {
+            if(i > 0) stringBuffer.append("&");
+            stringBuffer.append(filesList[i] + ":");
+            if(Files.isDirectory(Path.of(myPath.toString() + File.separator + filesList[i]))){
+                stringBuffer.append("d");
+            } else {
+                stringBuffer.append("f");
+            }
+        }
+        String listCommand = String.format("<command=filelist,path=%s,list=%s>", repoPath, stringBuffer.toString());
+        return listCommand;
     }
 
     // Создание репозитория для нового пользователя
@@ -105,6 +134,7 @@ public class CommandExecutor {
         if ("login".equals(com)) return CommandType.LOGIN;
         else if ("signup".equals(com)) return CommandType.SIGN_UP;
         else if ("upload".equals(com)) return CommandType.UP_LOAD;
+        else if ("getlist".equals(com)) return CommandType.GET_LIST;
         else return CommandType.NONE;
     }
 
@@ -133,9 +163,12 @@ public class CommandExecutor {
     }
 
     // Логирование пользователей и выдача ответа клиентам
-    private static void log(String serverLog, String clientAnswer, ChannelHandlerContext ctx, User user) {
+    private static void log(String serverLog, User user) {
         System.out.printf("%s %s\n", serverLog, user.getAddress());
-        ctx.writeAndFlush(clientAnswer);
+    }
+
+    public static void sendAnswerToClient(ChannelHandlerContext ctx, String clientsAnswer){
+        ctx.writeAndFlush(clientsAnswer);
     }
 
 }

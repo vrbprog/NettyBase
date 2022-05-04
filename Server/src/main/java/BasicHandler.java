@@ -7,6 +7,15 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import model.MetaData;
 import model.User;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+
 // Класс обработчика принимаемых данных
 public class BasicHandler extends ChannelInboundHandlerAdapter {
 
@@ -17,6 +26,10 @@ public class BasicHandler extends ChannelInboundHandlerAdapter {
     private StateChannelRead stateChannelRead = StateChannelRead.WAIT_META_DATA;
     private final DataBaseHandler db; // База пользователей
     private final User user; // Параметры подключившегося клиента
+    private FileOutputStream toFile;
+    private String filePath;
+    private int sizeFile;
+    private byte[] buf;
 
     public BasicHandler(DataBaseHandler db) {
         this.db = db;
@@ -32,7 +45,7 @@ public class BasicHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buffer = (ByteBuf) msg;
-        StringBuffer stringBuffer = new StringBuffer();
+        StringBuilder stringBuffer = new StringBuilder();
         char nextChar = 0;
 
         // Цикл обработки входных данных
@@ -58,21 +71,69 @@ public class BasicHandler extends ChannelInboundHandlerAdapter {
                     } else {
                         stateChannelRead = StateChannelRead.WAIT_META_DATA;
                     }
+                    stringBuffer.delete(0, stringBuffer.length());
                     break;
 
                 // Ожидание приема файла
+                case CREATE_FILE:
+
+                    toFile = null;
+                    final String SERVER_DIR = "Server" + File.separator + "Repositories" + File.separator;
+
+                    filePath = (SERVER_DIR + metaData.getMetadataParams().get("path"));
+
+                    Path path = Path.of(filePath);
+                    File file = new File(path.toAbsolutePath().toString());
+                    try {
+                        toFile = new FileOutputStream(file);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+
+                    sizeFile = Integer.parseInt(metaData.getMetadataParams().get("size"));
+
                 case READING_FILE:
 
-                    //TODO
-                    //FileLoader.loadToServer(buffer, user.getName(), fileInfo);
+                    int take = 0;
+                    int ready = buffer.readableBytes();
+                    if(sizeFile < ready) take = sizeFile;
+                    else {
+                        take = ready;
+                    }
+                    buf = new byte[take];
+                    buffer.readBytes(buf);
+                    try {
+                        toFile.write(buf);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
-                    stateChannelRead = StateChannelRead.WAIT_META_DATA;
+                    sizeFile -= take;
+
+                    if(sizeFile == 0) {
+                        try {
+                            toFile.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        int endPath = filePath.lastIndexOf(File.separator);
+                        String curDir = filePath.substring(0, endPath);
+                        endPath = curDir.indexOf(File.separator, 10);
+                        if (endPath > 0) {
+                            CommandExecutor.sendAnswerToClient(ctx,
+                                    CommandExecutor.createUserListRepository(curDir.substring(endPath + 1)));
+                        }
+                        stateChannelRead = StateChannelRead.WAIT_META_DATA;
+                    }else{
+                        stateChannelRead = StateChannelRead.READING_FILE;
+                    }
                     break;
 
                 default:
                     stateChannelRead = StateChannelRead.WAIT_META_DATA;
             }
         }
+        buffer.release();
     }
 
     @Override

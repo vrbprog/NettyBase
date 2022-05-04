@@ -15,11 +15,9 @@ public class MainApp extends Application {
 
     private Stage primaryStage;
     private NettyClient client;
-
-    public LoginController getLoginController() {
-        return loginController;
-    }
     private LoginController loginController;
+    private FileManagerController fileManagerController;
+
 
     @Override
     public void start(Stage primaryStage) {
@@ -77,7 +75,7 @@ public class MainApp extends Application {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/fileManager.fxml"));
             AnchorPane root = loader.load();
 
-            FileManagerController fileManagerController = loader.getController();
+            fileManagerController = loader.getController();
             fileManagerController.setMainApp(this);
 
             primaryStage.setTitle("Clouds Storage");
@@ -87,6 +85,13 @@ public class MainApp extends Application {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public LoginController getLoginController() {
+        return loginController;
+    }
+
+    public FileManagerController getFileManagerController() {
+        return fileManagerController;
     }
 
     public NettyClient getClient() {

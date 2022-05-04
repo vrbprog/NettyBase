@@ -1,4 +1,5 @@
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -16,6 +17,9 @@ public class RegisterController implements Initializable {
 
     @FXML
     private Label labLogin;
+
+    @FXML
+    private Label labError;
 
     @FXML
     private TextField fieldEmail;
@@ -36,9 +40,11 @@ public class RegisterController implements Initializable {
     void onButtonRegister(ActionEvent event) {
         if(!isAlphanumeric(fieldNick.getText())){
             fieldNick.clear();
+            labError.setText("Nickname must have alphanumeric format");
         }
         else if(!EmailValidator.getInstance().isValid(fieldEmail.getText())){
             fieldEmail.clear();
+            labError.setText("Incorrect email format");
         }
         else if(fieldFirstPass.getText().equals(fieldSecondPass.getText())) {
             mainApp.getClient().sendCommand(String.format("<command=signup,name=%s,email=%s,password=%s>",
@@ -47,6 +53,7 @@ public class RegisterController implements Initializable {
         else {
             fieldFirstPass.clear();
             fieldSecondPass.clear();
+            labError.setText("Fields for passwords don't equals");
         }
     }
 
@@ -72,9 +79,17 @@ public class RegisterController implements Initializable {
         buttonRegister.setOnMouseExited(mouseEvent -> buttonRegister.setStyle("-fx-background-color:  #4567E5"));
         labLogin.setOnMouseEntered(mouseEvent -> labLogin.setStyle("-fx-underline: true"));
         labLogin.setOnMouseExited(mouseEvent -> labLogin.setStyle("-fx-underline: false"));
+        fieldNick.setOnMouseClicked(mouseEvent -> labError.setText(""));
+        fieldEmail.setOnMouseClicked(mouseEvent -> labError.setText(""));
+        fieldFirstPass.setOnMouseClicked(mouseEvent -> labError.setText(""));
+        fieldSecondPass.setOnMouseClicked(mouseEvent -> labError.setText(""));
     }
 
     private void makeLogin() {
         mainApp.showLoginView();
+    }
+
+    public void showErrorMassage(String error){
+        labError.setText(error);
     }
 }

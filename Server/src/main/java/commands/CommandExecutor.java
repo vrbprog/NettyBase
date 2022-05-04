@@ -69,9 +69,9 @@ public class CommandExecutor {
                             else {
                                 log("SignUp: User " + "\"" + user.getName() + "\"" + " registered in the database", user);
                                 sendAnswerToClient(ctx, "<command=signup,result=successful>");
-
                                 db.insertUserToBase(user); // Внесение пользователя в БД
                                 createRepository(user.getName()); // Выделение пользователю места на сервере
+                                sendAnswerToClient(ctx, createUserListRepository(user.getName()));
                             }
                         }
                     }

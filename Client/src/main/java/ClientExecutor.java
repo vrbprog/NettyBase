@@ -3,7 +3,6 @@ import javafx.application.Platform;
 import model.FileModel;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -33,6 +32,13 @@ public class ClientExecutor {
                 res = params.get("result");
                 if("successful".equals(res)){
                     Platform.runLater(mainApp::showFileManager);
+                }else {
+                    if("busy_name".equals(res)){
+                        showErrorRegister(mainApp, "User with this name is already registered");
+                    }
+                    else if("busy_email".equals(res)){
+                        showErrorRegister(mainApp, "User with this email is already registered");
+                    }
                 }
                 return StateChannelRead.WAIT_META_DATA;
 
@@ -74,6 +80,12 @@ public class ClientExecutor {
                 return StateChannelRead.WAIT_META_DATA;
         }
         return StateChannelRead.WAIT_META_DATA;
+    }
+
+    private static void showErrorRegister(MainApp mainApp, String error){
+        Platform.runLater(() -> {
+            mainApp.getRegisterController().showErrorMassage(error);
+        });
     }
 
      public static List<FileModel> sortingListFile(List<FileModel> list, List<FileModel> sortedList){

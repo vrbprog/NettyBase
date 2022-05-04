@@ -6,11 +6,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringEncoder;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.net.ConnectException;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -58,7 +54,7 @@ public class NettyClient implements Runnable{
 
     public void sendFile(String fileName){
 
-        //TODO Write selected file
+        // TODO Refactoring this method for write file by blocks
         byte[] mas = new byte[0];
         try {
             mas = Files.readAllBytes(Path.of(fileName));
@@ -71,7 +67,6 @@ public class NettyClient implements Runnable{
         channel.writeAndFlush(outBuffer);
 
     }
-
 
     public void clientClose(){
         channel.close();

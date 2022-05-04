@@ -1,0 +1,6 @@
+package commands;
+
+// Определение типов выполняемых сервером команд
+public enum CommandType {
+    NONE, LOGIN, SIGN_UP, UP_LOAD
+}

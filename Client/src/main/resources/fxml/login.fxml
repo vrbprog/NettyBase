@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="LoginController">
+   <children>
+      <Pane prefHeight="400.0" prefWidth="200.0" style="-fx-background-color: #4567E5;">
+         <children>
+            <ImageView fitHeight="139.0" fitWidth="138.0" layoutX="35.0" layoutY="54.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/login.png" />
+               </image>
+            </ImageView>
+            <ImageView fitHeight="77.0" fitWidth="83.0" layoutX="62.0" layoutY="232.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/cloude.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="32.0" layoutY="317.0" prefHeight="28.0" prefWidth="138.0" text="Clouds Storage" textFill="WHITE">
+               <font>
+                  <Font name="System Bold Italic" size="19.0" />
+               </font>
+            </Label>
+            <Label layoutX="87.0" layoutY="352.0" text="2022" textFill="WHITE" />
+         </children>
+      </Pane>
+      <Pane layoutX="200.0" prefHeight="400.0" prefWidth="400.0">
+         <children>
+            <ImageView fitHeight="76.0" fitWidth="71.0" layoutX="165.0" layoutY="17.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/group.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="152.0" layoutY="77.0" prefHeight="38.0" prefWidth="103.0" text=" LOGIN" textFill="#4567e5">
+               <font>
+                  <Font name="Times New Roman Bold" size="25.0" />
+               </font>
+            </Label>
+            <TextField fx:id="fieldEmail" layoutX="97.0" layoutY="188.0" prefHeight="25.0" prefWidth="217.0" promptText="Email" />
+            <PasswordField fx:id="passField" layoutX="97.0" layoutY="235.0" prefHeight="25.0" prefWidth="217.0" promptText="Password" />
+            <Button fx:id="buttonLogin" layoutX="102.0" layoutY="302.0" mnemonicParsing="false" onAction="#onButtonLogin" prefHeight="38.0" prefWidth="209.0" style="-fx-background-color: #4567E5;" text="Login" textFill="WHITE">
+               <font>
+                  <Font size="20.0" />
+               </font>
+            </Button>
+            <Label layoutX="52.0" layoutY="192.0" text="Email" textAlignment="RIGHT" textFill="#4567e5">
+               <font>
+                  <Font name="System Italic" size="15.0" />
+               </font>
+            </Label>
+            <Label layoutX="27.0" layoutY="237.0" text="Password" textAlignment="RIGHT" textFill="#4567e5">
+               <font>
+                  <Font name="System Italic" size="15.0" />
+               </font>
+            </Label>
+            <Label layoutX="139.0" layoutY="357.0" prefHeight="17.0" prefWidth="61.0" text="New user?" />
+            <Label fx:id="labCreateAccount" layoutX="206.0" layoutY="357.0" prefHeight="17.0" prefWidth="96.0" text="Create Account." textFill="#051772">
+               <font>
+                  <Font name="System Bold Italic" size="12.0" />
+               </font></Label>
+            <Label fx:id="labServerError" layoutX="73.0" layoutY="121.0" text="Server not responding" textFill="#f70707" visible="false">
+               <font>
+                  <Font name="System Bold Italic" size="26.0" />
+               </font>
+            </Label>
+            <Label fx:id="labErrorAuth" layoutX="130.0" layoutY="274.0" text="Email or password incorrect" textFill="#e80b0b" visible="false" />
+         </children>
+      </Pane>
+   </children>
+</AnchorPane>

@@ -113,13 +113,7 @@ public class BasicHandler extends ChannelInboundHandlerAdapter {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        int endPath = filePath.lastIndexOf(File.separator);
-                        String curDir = filePath.substring(0, endPath);
-                        endPath = curDir.indexOf(File.separator, 10);
-                        if (endPath > 0) {
-                            CommandExecutor.sendAnswerToClient(ctx,
-                                    CommandExecutor.createUserListRepository(curDir.substring(endPath + 1)));
-                        }
+                        CommandExecutor.updateCurrentListRepository(filePath, ctx);
                         stateChannelRead = StateChannelRead.WAIT_META_DATA;
                     }else{
                         stateChannelRead = StateChannelRead.READING_FILE;

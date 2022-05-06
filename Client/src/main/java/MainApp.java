@@ -3,8 +3,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-
-import java.io.File;
 import java.io.IOException;
 
 public class MainApp extends Application {
@@ -78,6 +76,7 @@ public class MainApp extends Application {
 
             fileManagerController = loader.getController();
             fileManagerController.setMainApp(this);
+            fileManagerController.createDirController.setMainApp(this);
 
             primaryStage.setTitle("Clouds Storage");
             primaryStage.setResizable(false);

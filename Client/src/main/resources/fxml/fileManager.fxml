@@ -60,22 +60,53 @@
             <Label layoutX="4.0" layoutY="56.0" prefHeight="17.0" prefWidth="329.0" text="Current user directory" />
          </children>
       </Pane>
-      <Button fx:id="butUpload" layoutX="279.0" layoutY="574.0" mnemonicParsing="false" onAction="#onButtonUpload" prefHeight="31.0" prefWidth="130.0" text="Upload" />
-      <Button disable="true" layoutX="453.0" layoutY="574.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="130.0" text="Download" />
-      <Button disable="true" layoutX="799.0" layoutY="574.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="130.0" text="MakeDir" />
-      <Button disable="true" layoutX="626.0" layoutY="574.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="130.0" text="Delete" />
+      <Button fx:id="butUpload" layoutX="279.0" layoutY="574.0" mnemonicParsing="false" onAction="#onButtonUpload" prefHeight="42.0" prefWidth="150.0" text="  Upload" textFill="#0e47b2">
+         <graphic>
+            <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/upload.png" />
+               </image>
+            </ImageView>
+         </graphic>
+         <font>
+            <Font size="16.0" />
+         </font></Button>
+      <Button layoutX="516.0" layoutY="574.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="150.0" text=" Download" textFill="#159711">
+         <graphic>
+            <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/download.png" />
+               </image>
+            </ImageView>
+         </graphic>
+         <font>
+            <Font size="16.0" />
+         </font></Button>
+      <Button layoutX="748.0" layoutY="574.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="150.0" text="   Delete" textFill="#f80505">
+         <graphic>
+            <ImageView disable="true" fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/trash.png" />
+               </image>
+            </ImageView>
+         </graphic>
+         <font>
+            <Font size="16.0" />
+         </font></Button>
       <Pane layoutX="601.0" prefHeight="100.0" prefWidth="399.0">
          <children>
             <HBox layoutY="74.0" prefHeight="26.0" prefWidth="400.0">
                <children>
-                  <TextField fx:id="fieldServerDir" editable="false" focusTraversable="false" prefHeight="26.0" prefWidth="398.0">
+                  <TextField fx:id="fieldServerDir" editable="false" focusTraversable="false" prefHeight="25.0" prefWidth="257.0">
                      <HBox.margin>
                         <Insets bottom="5.0" right="5.0" top="1.0" />
                      </HBox.margin>
                   </TextField>
+                  <HBox fx:id="hBoxCreateDir" prefHeight="31.0" prefWidth="190.0" />
                </children>
             </HBox>
-            <Label layoutX="4.0" layoutY="56.0" prefHeight="17.0" prefWidth="329.0" text="Current server directory" />
+            <Label layoutX="4.0" layoutY="56.0" prefHeight="17.0" prefWidth="222.0" text="Current server directory" />
+            <Label fx:id="labNamingDir" layoutX="212.0" layoutY="56.0" prefHeight="17.0" prefWidth="158.0" text="Input name creating directory" visible="false" />
          </children>
       </Pane>
    </children>

@@ -4,9 +4,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import model.FileModel;
@@ -30,6 +32,9 @@ public class FileManagerController implements Initializable {
     private List<FileModel> currentServerDir;
     private Node[] clientsNodes;
     private Node[] serverNodes;
+    private boolean[] selectClientNodes;
+    public CreateDirController createDirController;
+    public NamingDirController namingDirController;
 
     @FXML
     private ScrollPane clientsFilesScroll;
@@ -38,10 +43,16 @@ public class FileManagerController implements Initializable {
     private ScrollPane serverFilesScroll;
 
     @FXML
+    public HBox hBoxCreateDir;
+
+    @FXML
     private TextField fieldUserDir;
 
     @FXML
     private TextField fieldServerDir;
+
+    @FXML
+    public Label labNamingDir;
 
     @FXML
     private Button butUserDir;
@@ -76,6 +87,7 @@ public class FileManagerController implements Initializable {
                 }
                 currentClientDir.get(i).setSelect(false);
                 clientsNodes[i].setStyle("-fx-background-color:  #FFFFFF");
+                selectClientNodes[i] = false;
             }
         }
     }
@@ -94,6 +106,7 @@ public class FileManagerController implements Initializable {
 
         List<FileModel> serverDir = new ArrayList<>();
         initServerListFiles(serverDir);
+        initCreateDirNode();
     }
 
     private List<FileModel> getListFiles(Path path, boolean isTop) {
@@ -130,6 +143,22 @@ public class FileManagerController implements Initializable {
 
     public void initServerListFiles(List<FileModel> list) {
         initListFiles(serverFilesScroll, list, true);
+    }
+
+    private void initCreateDirNode(){
+        Node[] nodeCreateDir = new Node[1];
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/createDir.fxml"));
+        try {
+            nodeCreateDir[0] = loader.load();
+            createDirController = loader.getController();
+
+            hBoxCreateDir.getChildren().removeAll();
+            hBoxCreateDir.getChildren().add(nodeCreateDir[0]);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initListFiles(ScrollPane scroll, List<FileModel> list, boolean isServerList) {
@@ -240,11 +269,16 @@ public class FileManagerController implements Initializable {
             serverNodes = nodes;
         } else {
             clientsNodes = nodes;
+            selectClientNodes = select;
         }
     }
 
     public void setMyRepoPath(Path myRepoPath) {
         this.myRepoPath = myRepoPath;
         fieldServerDir.setText(myRepoPath.toString());
+    }
+
+    public Path getMyRepoPath() {
+        return myRepoPath;
     }
 }

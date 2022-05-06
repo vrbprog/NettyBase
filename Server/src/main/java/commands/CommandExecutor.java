@@ -87,8 +87,19 @@ public class CommandExecutor {
                 case GET_LIST:
                     sendAnswerToClient(ctx, createUserListRepository(params.get("path")));
                     return StateChannelRead.WAIT_META_DATA;
+
+                case MAKE_DIR:
+                    System.out.print("MAKE_DIR ");
+                    System.out.println(params.get("path"));
+                    String SERVER_DIR = "Server" + File.separator + "Repositories" + File.separator;
+                    String dirPath = SERVER_DIR + params.get("path");
+                    Path newDir = Path.of(dirPath);
+                    Files.createDirectories(newDir);
+                    updateCurrentListRepository(dirPath, ctx);
+
+                    return StateChannelRead.WAIT_META_DATA;
             }
-        } catch (SQLException throwable) {
+        } catch (SQLException | IOException throwable) {
             throwable.printStackTrace();
         }
         return StateChannelRead.WAIT_META_DATA;
@@ -135,6 +146,7 @@ public class CommandExecutor {
         else if ("signup".equals(com)) return CommandType.SIGN_UP;
         else if ("upload".equals(com)) return CommandType.UP_LOAD;
         else if ("getlist".equals(com)) return CommandType.GET_LIST;
+        else if ("makedir".equals(com)) return CommandType.MAKE_DIR;
         else return CommandType.NONE;
     }
 
@@ -169,6 +181,16 @@ public class CommandExecutor {
 
     public static void sendAnswerToClient(ChannelHandlerContext ctx, String clientsAnswer){
         ctx.writeAndFlush(clientsAnswer);
+    }
+
+    public static void updateCurrentListRepository(String path, ChannelHandlerContext ctx) {
+        int endPath = path.lastIndexOf(File.separator);
+        String curDir = path.substring(0, endPath);
+        endPath = curDir.indexOf(File.separator, 10);
+        if (endPath > 0) {
+            CommandExecutor.sendAnswerToClient(ctx,
+                    CommandExecutor.createUserListRepository(curDir.substring(endPath + 1)));
+        }
     }
 
 }

@@ -2,6 +2,7 @@ package commands;
 
 import dataBase.ConfigDB;
 import dataBase.DataBaseHandler;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import model.User;
 
@@ -17,6 +18,7 @@ import java.util.Map;
 public class CommandExecutor {
 
     public static StateChannelRead Execute(Map<String, String> params, DataBaseHandler db, ChannelHandlerContext ctx, User user) {
+        final String SERVER_DIR = "Server" + File.separator + "Repositories" + File.separator;
         ResultSet res;
         try {
             switch (getCommand(params)) {
@@ -24,7 +26,7 @@ public class CommandExecutor {
                     System.out.println("No command");
                     return StateChannelRead.WAIT_META_DATA;
 
-                // Команда логирования
+                // Команда авторизации
                 case LOGIN:
                     // Проверка получения параметров имейла и пароля
                     if (checkEmailAndPassword(params, user)) {
@@ -83,19 +85,55 @@ public class CommandExecutor {
                             + params.get("path") + " on Serer", user);
                     return StateChannelRead.CREATE_FILE;
 
-
+                // Команда запроса списка фалов в указанной директории
                 case GET_LIST:
                     sendAnswerToClient(ctx, createUserListRepository(params.get("path")));
                     return StateChannelRead.WAIT_META_DATA;
 
+                // Команда создания новой директории
                 case MAKE_DIR:
                     System.out.print("MAKE_DIR ");
                     System.out.println(params.get("path"));
-                    String SERVER_DIR = "Server" + File.separator + "Repositories" + File.separator;
+
                     String dirPath = SERVER_DIR + params.get("path");
                     Path newDir = Path.of(dirPath);
                     Files.createDirectories(newDir);
                     updateCurrentListRepository(dirPath, ctx);
+                    return StateChannelRead.WAIT_META_DATA;
+
+                // Команда удаления файла
+                case DELETE:
+                    System.out.print("DELETE ");
+                    System.out.println(params.get("path"));
+
+                    String filePath = SERVER_DIR + params.get("path");
+                    Path delPath = Path.of(filePath);
+                    Files.delete(delPath);
+                    updateCurrentListRepository(filePath, ctx);
+                    return StateChannelRead.WAIT_META_DATA;
+
+                // Команда загрузки файла из репозитория
+                case DOWNLOAD:
+                    String fileName;
+                    dirPath = params.get("path");
+                    int endPath = dirPath.lastIndexOf(File.separator);
+                    if(endPath > 0) {
+                        fileName = dirPath.substring(endPath + 1);
+
+                        String download = SERVER_DIR + params.get("path");
+                        sendAnswerToClient(ctx, String.format("<command=download,path=%s,size=%d>",
+                                fileName, Files.size(Path.of(download))));
+                        byte[] mas = new byte[0];
+                        try {
+                            Path downPath = Path.of(download);
+                            mas = Files.readAllBytes(downPath);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        ByteBuf outBuffer = ctx.channel().alloc().buffer();
+                        outBuffer.writeBytes(mas);
+                        ctx.writeAndFlush(outBuffer);
+                    }
 
                     return StateChannelRead.WAIT_META_DATA;
             }
@@ -147,6 +185,8 @@ public class CommandExecutor {
         else if ("upload".equals(com)) return CommandType.UP_LOAD;
         else if ("getlist".equals(com)) return CommandType.GET_LIST;
         else if ("makedir".equals(com)) return CommandType.MAKE_DIR;
+        else if ("delete".equals(com)) return CommandType.DELETE;
+        else if ("download".equals(com)) return CommandType.DOWNLOAD;
         else return CommandType.NONE;
     }
 

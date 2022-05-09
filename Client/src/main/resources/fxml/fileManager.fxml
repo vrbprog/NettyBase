@@ -45,7 +45,7 @@
             </ScrollPane>
          </children>
       </AnchorPane>
-      <Pane layoutX="200.0" prefHeight="100.0" prefWidth="400.0">
+      <Pane layoutX="200.0" prefHeight="100.0" prefWidth="400.0" style="-fx-background-color: #E8F9FD;">
          <children>
             <HBox layoutY="74.0" prefHeight="26.0" prefWidth="396.0">
                <children>
@@ -58,9 +58,14 @@
                </children>
             </HBox>
             <Label layoutX="4.0" layoutY="56.0" prefHeight="17.0" prefWidth="329.0" text="Current user directory" />
+            <ImageView fitHeight="69.0" fitWidth="116.0" layoutX="142.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/clients.png" />
+               </image>
+            </ImageView>
          </children>
       </Pane>
-      <Button fx:id="butUpload" layoutX="279.0" layoutY="574.0" mnemonicParsing="false" onAction="#onButtonUpload" prefHeight="42.0" prefWidth="150.0" text="  Upload" textFill="#0e47b2">
+      <Button fx:id="butUpload" layoutX="358.0" layoutY="574.0" mnemonicParsing="false" onAction="#onButtonUpload" prefHeight="44.0" prefWidth="150.0" text="  Upload" textFill="#0e47b2">
          <graphic>
             <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -71,7 +76,7 @@
          <font>
             <Font size="16.0" />
          </font></Button>
-      <Button layoutX="516.0" layoutY="574.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="150.0" text=" Download" textFill="#159711">
+      <Button fx:id="butDownload" layoutX="516.0" layoutY="574.0" mnemonicParsing="false" onAction="#onButtonDownload" prefHeight="38.0" prefWidth="150.0" text=" Download" textFill="#159711">
          <graphic>
             <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -82,7 +87,7 @@
          <font>
             <Font size="16.0" />
          </font></Button>
-      <Button layoutX="748.0" layoutY="574.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="150.0" text="   Delete" textFill="#f80505">
+      <Button fx:id="butDelete" layoutX="674.0" layoutY="574.0" mnemonicParsing="false" onAction="#onButtonDelete" prefHeight="38.0" prefWidth="150.0" text="   Delete" textFill="#f80505">
          <graphic>
             <ImageView disable="true" fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -93,7 +98,7 @@
          <font>
             <Font size="16.0" />
          </font></Button>
-      <Pane layoutX="601.0" prefHeight="100.0" prefWidth="399.0">
+      <Pane layoutX="600.0" prefHeight="100.0" prefWidth="399.0" style="-fx-background-color: #E8F9FD;">
          <children>
             <HBox layoutY="74.0" prefHeight="26.0" prefWidth="400.0">
                <children>
@@ -106,8 +111,25 @@
                </children>
             </HBox>
             <Label layoutX="4.0" layoutY="56.0" prefHeight="17.0" prefWidth="222.0" text="Current server directory" />
-            <Label fx:id="labNamingDir" layoutX="212.0" layoutY="56.0" prefHeight="17.0" prefWidth="158.0" text="Input name creating directory" visible="false" />
+            <Label fx:id="labNamingDir" layoutX="212.0" layoutY="56.0" prefHeight="17.0" prefWidth="185.0" text="   Input name of creating directory" visible="false" />
+            <ImageView fitHeight="69.0" fitWidth="70.0" layoutX="155.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/server.png" />
+               </image>
+            </ImageView>
          </children>
       </Pane>
+      <ProgressBar fx:id="progressSize" layoutX="820.0" layoutY="540.0" prefHeight="18.0" prefWidth="176.0" progress="0.2" />
+      <Text layoutX="902.0" layoutY="554.0" strokeType="OUTSIDE" strokeWidth="0.0" text="20 %" />
+      <Label layoutX="603.0" layoutY="540.0" prefHeight="17.0" prefWidth="215.0" text="Size of occupied space:  20_000 Kb">
+         <font>
+            <Font size="11.0" />
+         </font>
+      </Label>
+      <Label layoutX="206.0" layoutY="540.0" prefHeight="17.0" prefWidth="386.0" text="Selected 0 Kb in 0 files">
+         <font>
+            <Font size="11.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>

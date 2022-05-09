@@ -33,6 +33,7 @@ public class FileManagerController implements Initializable {
     private Node[] clientsNodes;
     private Node[] serverNodes;
     private boolean[] selectClientNodes;
+    private boolean[] selectServerNodes;
     public CreateDirController createDirController;
     public NamingDirController namingDirController;
 
@@ -59,6 +60,12 @@ public class FileManagerController implements Initializable {
 
     @FXML
     private Button butUpload;
+
+    @FXML
+    private Button butDelete;
+
+    @FXML
+    private Button butDownload;
 
     @FXML
     void onButtonUserDir(ActionEvent event) {
@@ -92,6 +99,42 @@ public class FileManagerController implements Initializable {
         }
     }
 
+    @FXML
+    void onButtonDownload(ActionEvent event) {
+        for (int i = 0; i < currentServerDir.size(); i++) {
+            if(currentServerDir.get(i).isSelect()) {
+                if (!currentServerDir.get(i).isDir()) {
+
+                    mainApp.getClient().sendCommand(String.format("<command=download,path=%s>",
+                            myRepoPath + File.separator + currentServerDir.get(i).getFileName()));
+                }
+            }
+
+            currentServerDir.get(i).setSelect(false);
+            serverNodes[i].setStyle("-fx-background-color:  #FFFFFF");
+            selectServerNodes[i] = false;
+        }
+    }
+
+    @FXML
+    void onButtonDelete(ActionEvent event) {
+        for (int i = 0; i < currentServerDir.size(); i++) {
+            if(currentServerDir.get(i).isSelect()) {
+                if (!currentServerDir.get(i).isDir()) {
+
+                    mainApp.getClient().sendCommand(String.format("<command=delete,path=%s>",
+                            myRepoPath + File.separator + currentServerDir.get(i).getFileName()));
+                } else {
+
+                }
+            }
+
+            currentServerDir.get(i).setSelect(false);
+            serverNodes[i].setStyle("-fx-background-color:  #FFFFFF");
+            selectServerNodes[i] = false;
+        }
+    }
+
     public void setMainApp(MainApp mainApp) {
         this.mainApp = mainApp;
     }
@@ -107,6 +150,10 @@ public class FileManagerController implements Initializable {
         List<FileModel> serverDir = new ArrayList<>();
         initServerListFiles(serverDir);
         initCreateDirNode();
+    }
+
+    public void updateClientListFiles(){
+        initClientListFiles(getListFiles(myPath.toAbsolutePath(), false));
     }
 
     private List<FileModel> getListFiles(Path path, boolean isTop) {
@@ -142,6 +189,7 @@ public class FileManagerController implements Initializable {
     }
 
     public void initServerListFiles(List<FileModel> list) {
+        currentServerDir = list;
         initListFiles(serverFilesScroll, list, true);
     }
 
@@ -220,7 +268,6 @@ public class FileManagerController implements Initializable {
             nodes[i].setOnMouseClicked(MouseEvent -> {
                 if (MouseEvent.getClickCount() % 2 == 0) {
                     if (list.get(j).isDir()) {
-                        //if (checkDir(myPath, list.get(j).getFileName())) {
                         // Обрабатываем клик на строке с директорией на клиентской файловой системе
                         if (!isServerList) {
                             // Возвращаемся в родительскую директорию
@@ -267,6 +314,7 @@ public class FileManagerController implements Initializable {
         scroll.setContent(clientsPane);
         if(isServerList){
             serverNodes = nodes;
+            selectServerNodes = select;
         } else {
             clientsNodes = nodes;
             selectClientNodes = select;
@@ -280,5 +328,9 @@ public class FileManagerController implements Initializable {
 
     public Path getMyRepoPath() {
         return myRepoPath;
+    }
+
+    public Path getMyPath() {
+        return myPath;
     }
 }

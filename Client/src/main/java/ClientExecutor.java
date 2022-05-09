@@ -76,8 +76,10 @@ public class ClientExecutor {
                         mainApp.getFileManagerController().initServerListFiles(sortingListFile(listDir, sortedList));
                     });
                 }
-
                 return StateChannelRead.WAIT_META_DATA;
+
+            case DOWNLOAD:
+                return StateChannelRead.CREATE_FILE;
         }
         return StateChannelRead.WAIT_META_DATA;
     }
@@ -110,6 +112,7 @@ public class ClientExecutor {
         if ("login".equals(com)) return CommandType.LOGIN;
         else if ("signup".equals(com)) return CommandType.SIGN_UP;
         else if ("filelist".equals(com)) return CommandType.FILE_LIST;
+        else if ("download".equals(com)) return CommandType.DOWNLOAD;
         else return CommandType.NONE;
     }
 

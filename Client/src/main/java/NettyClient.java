@@ -65,7 +65,6 @@ public class NettyClient implements Runnable{
         ByteBuf outBuffer = channel.alloc().buffer();
         outBuffer.writeBytes(mas);
         channel.writeAndFlush(outBuffer);
-
     }
 
     public void clientClose(){

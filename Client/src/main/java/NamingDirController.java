@@ -25,14 +25,16 @@ public class NamingDirController {
     @FXML
     void onButtonCreate(ActionEvent event) {
 
-        if(isAlphanumeric(fieldNewDir.getText())) {
-            showCreateDirButton();
+        if(fieldNewDir.getText().length() > 0) {
+            if (isAlphanumeric(fieldNewDir.getText())) {
+                showCreateDirButton();
 
-            String newDir = mainApp.getFileManagerController().getMyRepoPath() + File.separator + fieldNewDir.getText();
-            mainApp.getClient().sendCommand(String.format("<command=makedir,path=%s>", newDir));
-        }else{
-            fieldNewDir.clear();
-            errorNamingDir();
+                String newDir = mainApp.getFileManagerController().getMyRepoPath() + File.separator + fieldNewDir.getText();
+                mainApp.getClient().sendCommand(String.format("<command=makedir,path=%s>", newDir));
+            } else {
+                fieldNewDir.clear();
+                errorNamingDir();
+            }
         }
     }
 

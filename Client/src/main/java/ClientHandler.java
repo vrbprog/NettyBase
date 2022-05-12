@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Path;
 
 // Класс обработчика принимаемых от сервера ответов
 public class ClientHandler extends ChannelInboundHandlerAdapter {
@@ -19,7 +18,6 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     private MetaData metaData;
     private StateChannelRead stateChannelRead = StateChannelRead.WAIT_META_DATA;
     private FileOutputStream toFile;
-    private String filePath;
     private int sizeFile;
     private byte[] buf;
 
@@ -28,7 +26,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx)  {
+    public void channelActive(ChannelHandlerContext ctx) {
 
     }
 
@@ -39,10 +37,10 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         StringBuilder stringBuffer = new StringBuilder();
         char nextChar = 0;
 
-        while((buffer.isReadable())) {
+        while ((buffer.isReadable())) {
             switch (stateChannelRead) {
                 case WAIT_META_DATA:
-                    while (buffer.isReadable() && ((char) buffer.readByte() != START_META_DATA));
+                    while (buffer.isReadable() && ((char) buffer.readByte() != START_META_DATA)) ;
                     stateChannelRead = StateChannelRead.READING_META_DATA;
                     metaData = new MetaData();
                     stringBuffer.setLength(0);
@@ -80,7 +78,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
                     int take = 0;
                     int ready = buffer.readableBytes();
-                    if(sizeFile < ready) take = sizeFile;
+                    if (sizeFile < ready) take = sizeFile;
                     else {
                         take = ready;
                     }
@@ -94,7 +92,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
                     sizeFile -= take;
 
-                    if(sizeFile == 0) {
+                    if (sizeFile == 0) {
                         try {
                             toFile.close();
                         } catch (IOException e) {
@@ -102,10 +100,10 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                         }
 
                         Platform.runLater(() -> {
-                                    mainApp.getFileManagerController().updateClientListFiles();
-                                });
+                            mainApp.getFileManagerController().updateClientListFiles();
+                        });
                         stateChannelRead = StateChannelRead.WAIT_META_DATA;
-                    }else{
+                    } else {
                         stateChannelRead = StateChannelRead.READING_FILE;
                     }
                     break;

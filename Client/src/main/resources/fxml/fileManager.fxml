@@ -31,12 +31,12 @@
             </ImageView>
          </children>
       </Pane>
-      <AnchorPane focusTraversable="true" layoutX="200.0" layoutY="100.0" prefHeight="440.0" prefWidth="400.0">
+      <AnchorPane layoutX="200.0" layoutY="100.0" prefHeight="440.0" prefWidth="400.0">
          <children>
-            <ScrollPane fx:id="clientsFilesScroll" prefHeight="440.0" prefWidth="400.0" />
+            <ScrollPane fx:id="clientsFilesScroll" focusTraversable="false" prefHeight="440.0" prefWidth="400.0" />
          </children>
       </AnchorPane>
-      <AnchorPane focusTraversable="true" layoutX="599.0" layoutY="100.0" prefHeight="440.0" prefWidth="400.0">
+      <AnchorPane layoutX="599.0" layoutY="100.0" prefHeight="440.0" prefWidth="400.0">
          <children>
             <ScrollPane fx:id="serverFilesScroll" focusTraversable="false" prefHeight="440.0" prefWidth="400.0">
                <cursor>
@@ -121,7 +121,7 @@
       </Pane>
       <ProgressBar fx:id="progressSize" layoutX="820.0" layoutY="540.0" prefHeight="18.0" prefWidth="176.0" progress="0.2" />
       <Text layoutX="902.0" layoutY="554.0" strokeType="OUTSIDE" strokeWidth="0.0" text="20 %" />
-      <Label layoutX="603.0" layoutY="540.0" prefHeight="17.0" prefWidth="215.0" text="Size of occupied space:  20_000 Kb">
+      <Label layoutX="603.0" layoutY="540.0" prefHeight="17.0" prefWidth="118.0" text="Size of occupied space: ">
          <font>
             <Font size="11.0" />
          </font>
@@ -131,5 +131,6 @@
             <Font size="11.0" />
          </font>
       </Label>
+      <Label fx:id="labUsedSize" layoutX="721.0" layoutY="540.0" prefHeight="17.0" prefWidth="92.0" />
    </children>
 </AnchorPane>

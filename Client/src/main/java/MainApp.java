@@ -69,7 +69,7 @@ public class MainApp extends Application {
         }
     }
 
-    public void showFileManager() {
+    public void showFileManager(String userSize) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/fileManager.fxml"));
             AnchorPane root = loader.load();
@@ -77,6 +77,7 @@ public class MainApp extends Application {
             fileManagerController = loader.getController();
             fileManagerController.setMainApp(this);
             fileManagerController.createDirController.setMainApp(this);
+            fileManagerController.setCurrentUserSize(userSize);
 
             primaryStage.setTitle("Clouds Storage");
             primaryStage.setResizable(false);

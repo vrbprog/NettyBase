@@ -6,12 +6,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import model.MetaData;
 import model.User;
+import dataBase.DataBaseHandler;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.SQLException;
 
 // Класс обработчика принимаемых данных
 public class BasicHandler extends ChannelInboundHandlerAdapter {
@@ -25,6 +27,7 @@ public class BasicHandler extends ChannelInboundHandlerAdapter {
     private final User user; // Параметры подключившегося клиента
     private FileOutputStream toFile;
     private String filePath;
+    private Integer newSize;
     private int sizeFile;
     private byte[] buf;
 
@@ -46,16 +49,16 @@ public class BasicHandler extends ChannelInboundHandlerAdapter {
         char nextChar = 0;
 
         // Цикл обработки входных данных
-        while((buffer.isReadable())) {
+        while ((buffer.isReadable())) {
             switch (stateChannelRead) {
                 // Ожидание приема начала метаданных '<'
                 case WAIT_META_DATA:
-                    while (buffer.isReadable() && ((char) buffer.readByte() != START_META_DATA));
+                    while (buffer.isReadable() && ((char) buffer.readByte() != START_META_DATA)) ;
                     stateChannelRead = StateChannelRead.READING_META_DATA;
                     metaData = new MetaData();
                     stringBuffer.setLength(0);
 
-                // Прием тела метаданных
+                    // Прием тела метаданных
                 case READING_META_DATA:
                     while (buffer.isReadable() && (nextChar = (char) buffer.readByte()) != END_META_DATA) {
                         stringBuffer.append(nextChar);
@@ -88,12 +91,15 @@ public class BasicHandler extends ChannelInboundHandlerAdapter {
                     }
 
                     sizeFile = Integer.parseInt(metaData.getMetadataParams().get("size"));
+                    int size = sizeFile / 1024;
+                    if (sizeFile % 1024 > 0) size++;
+                    newSize = user.getUsedSize() + size;
 
                 case READING_FILE:
 
                     int take = 0;
                     int ready = buffer.readableBytes();
-                    if(sizeFile < ready) take = sizeFile;
+                    if (sizeFile < ready) take = sizeFile;
                     else {
                         take = ready;
                     }
@@ -107,15 +113,17 @@ public class BasicHandler extends ChannelInboundHandlerAdapter {
 
                     sizeFile -= take;
 
-                    if(sizeFile == 0) {
+                    if (sizeFile == 0) {
                         try {
                             toFile.close();
-                        } catch (IOException e) {
+                            db.updateUserCurrentSize(newSize, user);
+                        } catch (IOException | SQLException e) {
                             e.printStackTrace();
                         }
-                        CommandExecutor.updateCurrentListRepository(filePath, ctx);
+                        user.setUsedSize(newSize);
+                        CommandExecutor.updateCurrentListRepository(filePath, ctx, newSize);
                         stateChannelRead = StateChannelRead.WAIT_META_DATA;
-                    }else{
+                    } else {
                         stateChannelRead = StateChannelRead.READING_FILE;
                     }
                     break;

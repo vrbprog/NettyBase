@@ -20,7 +20,10 @@ public class ClientExecutor {
                 System.out.println("Login");
                 res = params.get("result");
                 if("successful".equals(res)){
-                    Platform.runLater(mainApp::showFileManager);
+                    Platform.runLater(() -> {
+                        mainApp.showFileManager(params.get("used"));
+                    });
+                    //Platform.runLater(mainApp::showFileManager);
                 } else if("user_not_fined".equals(res)){
                     Platform.runLater(() -> {
                         mainApp.getLoginController().errorAuth();
@@ -31,7 +34,9 @@ public class ClientExecutor {
             case SIGN_UP:
                 res = params.get("result");
                 if("successful".equals(res)){
-                    Platform.runLater(mainApp::showFileManager);
+                    Platform.runLater(() -> {
+                        mainApp.showFileManager(params.get("used"));
+                    });
                 }else {
                     if("busy_name".equals(res)){
                         showErrorRegister(mainApp, "User with this name is already registered");
@@ -74,6 +79,7 @@ public class ClientExecutor {
                     Platform.runLater(() -> {
                         List<FileModel> sortedList = new ArrayList<>();
                         mainApp.getFileManagerController().initServerListFiles(sortingListFile(listDir, sortedList));
+                        mainApp.getFileManagerController().setCurrentUserSize(params.get("used"));
                     });
                 }
                 return StateChannelRead.WAIT_META_DATA;

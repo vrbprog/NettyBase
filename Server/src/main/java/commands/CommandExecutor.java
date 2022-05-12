@@ -35,10 +35,13 @@ public class CommandExecutor {
                         if (res.next()) {
                             // Выборка из
                             user.setName(res.getString(ConfigDB.USER_NAME));
+                            user.setUsedSize(res.getInt(ConfigDB.USER_USED_SIZE));
+                            user.setLimitSize(res.getInt(ConfigDB.USER_LIMIT_SIZE));
                             log("User " + user.getName() + " login on server", user);
-                            sendAnswerToClient(ctx, "<command=login,result=successful>");
-                                    //+ createUserListRepository(user.getName()));
-                            sendAnswerToClient(ctx, createUserListRepository(user.getName()));
+                            //sendAnswerToClient(ctx, "<command=login,result=successful>");
+                            sendAnswerToClient(ctx, String.format("<command=login,result=successful,used=%d,limit=%d>",
+                                    user.getUsedSize(),user.getLimitSize()));
+                            sendAnswerToClient(ctx, createUserListRepository(user.getName(), user.getUsedSize()));
                         // Отсутствие пользователя с введенными параметрами в БД
                         } else {
                             log("User with define params not fined", user);
@@ -69,11 +72,19 @@ public class CommandExecutor {
                             }
                             // Успешная регистрация пользователя
                             else {
-                                log("SignUp: User " + "\"" + user.getName() + "\"" + " registered in the database", user);
-                                sendAnswerToClient(ctx, "<command=signup,result=successful>");
-                                db.insertUserToBase(user); // Внесение пользователя в БД
-                                createRepository(user.getName()); // Выделение пользователю места на сервере
-                                sendAnswerToClient(ctx, createUserListRepository(user.getName()));
+                                try {
+                                    db.insertUserToBase(user); // Внесение пользователя в БД
+                                    user.setLimitSize(ConfigDB.DEFAULT_LIMIT_SIZE);
+                                    user.setUsedSize(0);
+                                    log("SignUp: User " + "\"" + user.getName() + "\"" + " registered in the database", user);
+                                    sendAnswerToClient(ctx, String.format("<command=signup,result=successful,used=%d,limit=%d>",
+                                            user.getUsedSize(),user.getLimitSize()));
+                                    createRepository(user.getName()); // Выделение пользователю места на сервере
+                                    sendAnswerToClient(ctx, createUserListRepository(user.getName(), user.getUsedSize()));
+                                } catch (SQLException throwables) {
+                                    log("Error write to database",user);
+                                    throwables.printStackTrace();
+                                }
                             }
                         }
                     }
@@ -87,7 +98,7 @@ public class CommandExecutor {
 
                 // Команда запроса списка фалов в указанной директории
                 case GET_LIST:
-                    sendAnswerToClient(ctx, createUserListRepository(params.get("path")));
+                    sendAnswerToClient(ctx, createUserListRepository(params.get("path"), user.getUsedSize()));
                     return StateChannelRead.WAIT_META_DATA;
 
                 // Команда создания новой директории
@@ -98,7 +109,7 @@ public class CommandExecutor {
                     String dirPath = SERVER_DIR + params.get("path");
                     Path newDir = Path.of(dirPath);
                     Files.createDirectories(newDir);
-                    updateCurrentListRepository(dirPath, ctx);
+                    updateCurrentListRepository(dirPath, ctx, user.getUsedSize());
                     return StateChannelRead.WAIT_META_DATA;
 
                 // Команда удаления файла
@@ -108,8 +119,16 @@ public class CommandExecutor {
 
                     String filePath = SERVER_DIR + params.get("path");
                     Path delPath = Path.of(filePath);
+
+                    long delSize = Files.size(delPath);
+                    int size = (int) delSize / 1024;
+                    if (delSize % 1024 > 0) size++;
+                    int newSize = user.getUsedSize() - size;
+
                     Files.delete(delPath);
-                    updateCurrentListRepository(filePath, ctx);
+                    user.setUsedSize(newSize);
+                    db.updateUserCurrentSize(newSize, user);
+                    updateCurrentListRepository(filePath, ctx, newSize);
                     return StateChannelRead.WAIT_META_DATA;
 
                 // Команда загрузки файла из репозитория
@@ -144,7 +163,7 @@ public class CommandExecutor {
     }
 
     // Создание листа корневого каталога клиента
-    public static String createUserListRepository(String repoPath) {
+    public static String createUserListRepository(String repoPath, Integer size) {
         final String SERVER_DIR = "Server" + File.separator + "Repositories" + File.separator;
         Path myPath = Path.of(SERVER_DIR + repoPath);
 
@@ -161,7 +180,8 @@ public class CommandExecutor {
                 stringBuffer.append("f");
             }
         }
-        String listCommand = String.format("<command=filelist,path=%s,list=%s>", repoPath, stringBuffer.toString());
+        String listCommand = String.format("<command=filelist,path=%s,list=%s,used=%d>",
+                repoPath, stringBuffer.toString(), size);
         return listCommand;
     }
 
@@ -223,13 +243,13 @@ public class CommandExecutor {
         ctx.writeAndFlush(clientsAnswer);
     }
 
-    public static void updateCurrentListRepository(String path, ChannelHandlerContext ctx) {
+    public static void updateCurrentListRepository(String path, ChannelHandlerContext ctx, Integer size) {
         int endPath = path.lastIndexOf(File.separator);
         String curDir = path.substring(0, endPath);
         endPath = curDir.indexOf(File.separator, 10);
         if (endPath > 0) {
             CommandExecutor.sendAnswerToClient(ctx,
-                    CommandExecutor.createUserListRepository(curDir.substring(endPath + 1)));
+                    CommandExecutor.createUserListRepository(curDir.substring(endPath + 1), size));
         }
     }
 

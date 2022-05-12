@@ -8,6 +8,8 @@ public class User {
     private String email;
     private String password;
     private SocketAddress address;
+    private Integer limitSize;
+    private Integer usedSize;
 
     public User() {
         this.name = "user";
@@ -45,5 +47,21 @@ public class User {
 
     public void setAddress(SocketAddress address) {
         this.address = address;
+    }
+
+    public Integer getLimitSize() {
+        return limitSize;
+    }
+
+    public void setLimitSize(Integer limitSize) {
+        this.limitSize = limitSize;
+    }
+
+    public Integer getUsedSize() {
+        return usedSize;
+    }
+
+    public void setUsedSize(Integer usedSize) {
+        this.usedSize = usedSize;
     }
 }

@@ -56,6 +56,9 @@ public class FileManagerController implements Initializable {
     public Label labNamingDir;
 
     @FXML
+    private Label labUsedSize;
+
+    @FXML
     private Button butUserDir;
 
     @FXML
@@ -142,8 +145,8 @@ public class FileManagerController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        myPath = Path.of("Client");
-        upLimitPath = myPath.toAbsolutePath();
+        myPath = Path.of("Client").toAbsolutePath();
+        upLimitPath = myPath;
         fieldUserDir.setText(myPath.toAbsolutePath().toString());
         initClientListFiles(getListFiles(myPath, true));
 
@@ -272,12 +275,9 @@ public class FileManagerController implements Initializable {
                         if (!isServerList) {
                             // Возвращаемся в родительскую директорию
                             if (list.get(j).isUpperDir()) {
-                                int endPath = myPath.toAbsolutePath().toString().lastIndexOf(File.separator);
-                                if(endPath > 0) {
-                                    myPath = Path.of(myPath.toAbsolutePath().toString().substring(0, endPath));
+                                    myPath = myPath.getParent();
                                     fieldUserDir.setText(myPath.toAbsolutePath().toString());
                                     initClientListFiles(getListFiles(myPath, false));
-                                }
                             }
                             // Открываем директорию в пользовательском каталоге
                             else {
@@ -295,12 +295,8 @@ public class FileManagerController implements Initializable {
                             }
                             // Переходим в родительскую директорию в репозитории
                             else {
-                                int endPath = myRepoPath.toString().lastIndexOf(File.separator);
-                                if(endPath > 0) {
-                                    Path myParentRepo = Path.of(myRepoPath.toString().substring(0, endPath));
-                                    mainApp.getClient().sendCommand(String.format("<command=getlist,path=%s>",
-                                            myParentRepo.toString()));
-                                }
+                                mainApp.getClient().sendCommand(String.format("<command=getlist,path=%s>",
+                                            myRepoPath.getParent()));
                             }
                         }
                     }
@@ -311,6 +307,8 @@ public class FileManagerController implements Initializable {
         }
 
         clientsPane.getChildren().add(vBoxClientsFiles);
+        clientsPane.setFocusTraversable(false);
+        vBoxClientsFiles.setFocusTraversable(false);
         scroll.setContent(clientsPane);
         if(isServerList){
             serverNodes = nodes;
@@ -332,5 +330,9 @@ public class FileManagerController implements Initializable {
 
     public Path getMyPath() {
         return myPath;
+    }
+
+    public void setCurrentUserSize(String size){
+        labUsedSize.setText(size + " Kb");
     }
 }

@@ -12,7 +12,7 @@ public class MetaData {
         String[] keyValueParamsArray = rawMetadata.split(",");
         for (String rawKeyValue : keyValueParamsArray) {
             String[] keyValueArr = rawKeyValue.split("=");
-            if(keyValueArr.length > 1) {
+            if (keyValueArr.length > 1) {
                 metadataParams.put(keyValueArr[0], keyValueArr[1]);
             }
         }

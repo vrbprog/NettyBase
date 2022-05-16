@@ -29,12 +29,12 @@ public class DataBaseHandler extends ConfigDB {
     }
 
     // Выборка пользователя при авторизации
-    public ResultSet getUserFromBase(String email, String pass){
+    public ResultSet getUserFromBase(String email, String pass) {
         ResultSet rs = null;
         try {
             PreparedStatement prSt = getDbConnection().prepareStatement(SELECT_AUTH);
-            prSt.setString(1,email);
-            prSt.setString(2,pass);
+            prSt.setString(1, email);
+            prSt.setString(2, pass);
             rs = prSt.executeQuery();
         } catch (SQLException | ClassNotFoundException throwable) {
             throwable.printStackTrace();
@@ -59,21 +59,21 @@ public class DataBaseHandler extends ConfigDB {
     }
 
     // Выборка из БД пользователя с заданным именем
-    public ResultSet CheckUserName(String name){
+    public ResultSet CheckUserName(String name) {
         return checkUserFieldFromBase(name, CHECK_USER_NAME);
     }
 
     // Выборка из БД пользователя с заданным email
-    public ResultSet CheckUserEmail(String email){
+    public ResultSet CheckUserEmail(String email) {
         return checkUserFieldFromBase(email, CHECK_USER_EMAIL);
     }
 
     // Выборка из БД поля с заданным значением
-    public ResultSet checkUserFieldFromBase(String field, String select){
+    public ResultSet checkUserFieldFromBase(String field, String select) {
         ResultSet rs = null;
         try {
             PreparedStatement prSt = getDbConnection().prepareStatement(select);
-            prSt.setString(1,field);
+            prSt.setString(1, field);
             rs = prSt.executeQuery();
         } catch (SQLException | ClassNotFoundException throwable) {
             throwable.printStackTrace();

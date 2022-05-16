@@ -37,30 +37,25 @@ public class RegisterController implements Initializable {
 
     @FXML
     void onButtonRegister(ActionEvent event) {
-        if(!isAlphanumeric(fieldNick.getText())){
+        if (!isAlphanumeric(fieldNick.getText())) {
             fieldNick.clear();
             labError.setText("Nickname must have alphanumeric format");
-        }
-        else if(!EmailValidator.getInstance().isValid(fieldEmail.getText())){
+        } else if (!EmailValidator.getInstance().isValid(fieldEmail.getText())) {
             fieldEmail.clear();
             labError.setText("Incorrect email format");
-        }
-        else if(fieldFirstPass.getText().equals(fieldSecondPass.getText())) {
+        } else if (fieldFirstPass.getText().equals(fieldSecondPass.getText())) {
             mainApp.getClient().sendCommand(String.format("<command=signup,name=%s,email=%s,password=%s>",
                     fieldNick.getText().toLowerCase(), fieldEmail.getText().toLowerCase(), fieldFirstPass.getText()));
-        }
-        else {
+        } else {
             fieldFirstPass.clear();
             fieldSecondPass.clear();
             labError.setText("Fields for passwords don't equals");
         }
     }
 
-    private boolean isAlphanumeric(String str)
-    {
+    private boolean isAlphanumeric(String str) {
         char[] charArray = str.toCharArray();
-        for(char c:charArray)
-        {
+        for (char c : charArray) {
             if (!Character.isLetterOrDigit(c))
                 return false;
         }
@@ -88,7 +83,7 @@ public class RegisterController implements Initializable {
         mainApp.showLoginView();
     }
 
-    public void showErrorMassage(String error){
+    public void showErrorMassage(String error) {
         labError.setText(error);
     }
 }

@@ -21,7 +21,7 @@ public class FileItemController implements Initializable {
 
     }
 
-    public void setFileItemInfo(String fileName, String fileIconURL){
+    public void setFileItemInfo(String fileName, String fileIconURL) {
         itemName.setText(fileName);
         itemIcon.setImage(new Image(String.valueOf(getClass().getResource(fileIconURL))));
     }

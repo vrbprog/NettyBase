@@ -3,13 +3,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import model.FileModel;
 
@@ -36,6 +34,8 @@ public class FileManagerController implements Initializable {
     private boolean[] selectServerNodes;
     public CreateDirController createDirController;
     public NamingDirController namingDirController;
+    private int levelLimit;
+    private int currentLevel = 0;
 
     @FXML
     private ScrollPane clientsFilesScroll;
@@ -53,10 +53,19 @@ public class FileManagerController implements Initializable {
     private TextField fieldServerDir;
 
     @FXML
+    private ProgressBar progressSize;
+
+    @FXML
     public Label labNamingDir;
 
     @FXML
     private Label labUsedSize;
+
+    @FXML
+    private Label labLimit;
+
+    @FXML
+    private Text textPersent;
 
     @FXML
     private Button butUserDir;
@@ -86,12 +95,12 @@ public class FileManagerController implements Initializable {
     @FXML
     void onButtonUpload(ActionEvent event) throws IOException {
         for (int i = 0; i < currentClientDir.size(); i++) {
-            if(currentClientDir.get(i).isSelect()){
-                if(!currentClientDir.get(i).isDir()){
+            if (currentClientDir.get(i).isSelect()) {
+                if (!currentClientDir.get(i).isDir()) {
 
-                        mainApp.getClient().sendCommand(String.format("<command=upload,path=%s,size=%d>",
-                                myRepoPath + File.separator + currentClientDir.get(i).getFileName(),
-                                Files.size(Path.of(myPath.toAbsolutePath() + File.separator + currentClientDir.get(i).getFileName()))));
+                    mainApp.getClient().sendCommand(String.format("<command=upload,path=%s,size=%d>",
+                            myRepoPath + File.separator + currentClientDir.get(i).getFileName(),
+                            Files.size(Path.of(myPath.toAbsolutePath() + File.separator + currentClientDir.get(i).getFileName()))));
 
                     mainApp.getClient().sendFile(myPath.toAbsolutePath() + File.separator + currentClientDir.get(i).getFileName());
                 }
@@ -105,7 +114,7 @@ public class FileManagerController implements Initializable {
     @FXML
     void onButtonDownload(ActionEvent event) {
         for (int i = 0; i < currentServerDir.size(); i++) {
-            if(currentServerDir.get(i).isSelect()) {
+            if (currentServerDir.get(i).isSelect()) {
                 if (!currentServerDir.get(i).isDir()) {
 
                     mainApp.getClient().sendCommand(String.format("<command=download,path=%s>",
@@ -122,14 +131,11 @@ public class FileManagerController implements Initializable {
     @FXML
     void onButtonDelete(ActionEvent event) {
         for (int i = 0; i < currentServerDir.size(); i++) {
-            if(currentServerDir.get(i).isSelect()) {
-                if (!currentServerDir.get(i).isDir()) {
-
+            if (currentServerDir.get(i).isSelect()) {
+                //if (!currentServerDir.get(i).isDir()) {
                     mainApp.getClient().sendCommand(String.format("<command=delete,path=%s>",
                             myRepoPath + File.separator + currentServerDir.get(i).getFileName()));
-                } else {
-
-                }
+                //}
             }
 
             currentServerDir.get(i).setSelect(false);
@@ -155,7 +161,7 @@ public class FileManagerController implements Initializable {
         initCreateDirNode();
     }
 
-    public void updateClientListFiles(){
+    public void updateClientListFiles() {
         initClientListFiles(getListFiles(myPath.toAbsolutePath(), false));
     }
 
@@ -196,7 +202,7 @@ public class FileManagerController implements Initializable {
         initListFiles(serverFilesScroll, list, true);
     }
 
-    private void initCreateDirNode(){
+    public void initCreateDirNode() {
         Node[] nodeCreateDir = new Node[1];
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/createDir.fxml"));
@@ -275,9 +281,9 @@ public class FileManagerController implements Initializable {
                         if (!isServerList) {
                             // Возвращаемся в родительскую директорию
                             if (list.get(j).isUpperDir()) {
-                                    myPath = myPath.getParent();
-                                    fieldUserDir.setText(myPath.toAbsolutePath().toString());
-                                    initClientListFiles(getListFiles(myPath, false));
+                                myPath = myPath.getParent();
+                                fieldUserDir.setText(myPath.toAbsolutePath().toString());
+                                initClientListFiles(getListFiles(myPath, false));
                             }
                             // Открываем директорию в пользовательском каталоге
                             else {
@@ -292,11 +298,13 @@ public class FileManagerController implements Initializable {
                             if (!list.get(j).isUpperDir()) {
                                 mainApp.getClient().sendCommand(String.format("<command=getlist,path=%s>",
                                         myRepoPath + File.separator + list.get(j).getFileName()));
+                                currentLevel++;
                             }
                             // Переходим в родительскую директорию в репозитории
                             else {
                                 mainApp.getClient().sendCommand(String.format("<command=getlist,path=%s>",
-                                            myRepoPath.getParent()));
+                                        myRepoPath.getParent()));
+                                currentLevel--;
                             }
                         }
                     }
@@ -310,12 +318,16 @@ public class FileManagerController implements Initializable {
         clientsPane.setFocusTraversable(false);
         vBoxClientsFiles.setFocusTraversable(false);
         scroll.setContent(clientsPane);
-        if(isServerList){
+        if (isServerList) {
             serverNodes = nodes;
             selectServerNodes = select;
         } else {
             clientsNodes = nodes;
             selectClientNodes = select;
+        }
+
+        if(currentLevel > 0) {
+            createDirController.butCreateDir.setDisable(currentLevel == levelLimit);
         }
     }
 
@@ -332,7 +344,48 @@ public class FileManagerController implements Initializable {
         return myPath;
     }
 
-    public void setCurrentUserSize(String size){
+    public void setCurrentUserSize(String size) {
         labUsedSize.setText(size + " Kb");
+    }
+
+    public void setCurrentUserLimit(String limit) {
+        labLimit.setText(limit + " Kb");
+    }
+
+    public void setProgress(double progress) {
+        progressSize.setProgress(progress);
+    }
+
+    public void setPersent(String per) {
+        textPersent.setText(per);
+    }
+
+    public void setUserProfile(String userSize, String limitSize, String level) {
+
+        setCurrentUserSize(userSize);
+        setCurrentUserLimit(limitSize);
+        setProgress(Double.parseDouble(userSize) / Double.parseDouble(limitSize));
+        setPersent(String.format("%3.2f %%",
+                100 * Double.parseDouble(userSize) / Double.parseDouble(limitSize)));
+        setUserLevelLimit(Integer.parseInt(level));
+    }
+
+//    private boolean isNotEmptyDirectory(String dir) throws IOException {
+//        Path path = Path.of(dir);
+//        try (var entries = Files.list(path)) {
+//            return entries.findFirst().isPresent();
+//        }
+//    }
+
+    public void setUserLevelLimit(int limit){
+        levelLimit = limit;
+    }
+
+    public String getUserLevelLimit(){
+        return String.valueOf(levelLimit);
+    }
+
+    public void setUserCurrentLevel(int limit){
+        levelLimit = limit;
     }
 }

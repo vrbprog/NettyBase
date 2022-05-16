@@ -1,4 +1,3 @@
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -12,7 +11,7 @@ public class CreateDirController {
     private MainApp mainApp;
 
     @FXML
-    private Button butCreateDir;
+    public Button butCreateDir;
 
     @FXML
     void onButtonCreateDir(ActionEvent event) {

@@ -2,12 +2,15 @@ package commands;
 
 import dataBase.ConfigDB;
 import dataBase.DataBaseHandler;
-import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import model.User;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.ResultSet;
@@ -16,6 +19,7 @@ import java.util.Map;
 
 // Класс обработчика выполняемых команд
 public class CommandExecutor {
+    private static final int FILE_BLOCK_SIZE = 1024 * 1024;
 
     public static StateChannelRead Execute(Map<String, String> params, DataBaseHandler db, ChannelHandlerContext ctx, User user) {
         final String SERVER_DIR = "Server" + File.separator + "Repositories" + File.separator;
@@ -37,17 +41,18 @@ public class CommandExecutor {
                             user.setName(res.getString(ConfigDB.USER_NAME));
                             user.setUsedSize(res.getInt(ConfigDB.USER_USED_SIZE));
                             user.setLimitSize(res.getInt(ConfigDB.USER_LIMIT_SIZE));
+                            user.setLevelSubSir(res.getInt(ConfigDB.USER_DIR_LEV));
                             log("User " + user.getName() + " login on server", user);
                             //sendAnswerToClient(ctx, "<command=login,result=successful>");
-                            sendAnswerToClient(ctx, String.format("<command=login,result=successful,used=%d,limit=%d>",
-                                    user.getUsedSize(),user.getLimitSize()));
-                            sendAnswerToClient(ctx, createUserListRepository(user.getName(), user.getUsedSize()));
-                        // Отсутствие пользователя с введенными параметрами в БД
+                            sendAnswerToClient(ctx, String.format("<command=login,result=successful,used=%d,limit=%d,level=%d>",
+                                    user.getUsedSize(), user.getLimitSize(), user.getLevelSubSir()));
+                            sendAnswerToClient(ctx, createUserListRepository(user.getName(), user));
+                            // Отсутствие пользователя с введенными параметрами в БД
                         } else {
                             log("User with define params not fined", user);
                             sendAnswerToClient(ctx, "<command=login,result=user_not_fined>");
                         }
-                    // Отсутствие полей для логирования в метаданных
+                        // Отсутствие полей для логирования в метаданных
                     } else {
                         log("Not define authorisation params", user);
                         sendAnswerToClient(ctx, "<command=login,result=not_define_authorisation_params>");
@@ -76,13 +81,14 @@ public class CommandExecutor {
                                     db.insertUserToBase(user); // Внесение пользователя в БД
                                     user.setLimitSize(ConfigDB.DEFAULT_LIMIT_SIZE);
                                     user.setUsedSize(0);
+                                    user.setLevelSubSir(res.getInt(ConfigDB.DEFAULT_DIR_LEV));
                                     log("SignUp: User " + "\"" + user.getName() + "\"" + " registered in the database", user);
-                                    sendAnswerToClient(ctx, String.format("<command=signup,result=successful,used=%d,limit=%d>",
-                                            user.getUsedSize(),user.getLimitSize()));
+                                    sendAnswerToClient(ctx, String.format("<command=signup,result=successful,used=%d,limit=%d,level=%d>",
+                                            user.getUsedSize(), user.getLimitSize(), user.getLevelSubSir()));
                                     createRepository(user.getName()); // Выделение пользователю места на сервере
-                                    sendAnswerToClient(ctx, createUserListRepository(user.getName(), user.getUsedSize()));
+                                    sendAnswerToClient(ctx, createUserListRepository(user.getName(), user));
                                 } catch (SQLException throwables) {
-                                    log("Error write to database",user);
+                                    log("Error write to database", user);
                                     throwables.printStackTrace();
                                 }
                             }
@@ -94,11 +100,16 @@ public class CommandExecutor {
                 case UP_LOAD:
                     log("User " + user.getName() + " upload file "
                             + params.get("path") + " on Serer", user);
+
+//                    Path path = Path.of(params.get("path"));
+//                    System.out.println(path.getParent());
+//                    System.out.println(path.getParent().getParent());
+
                     return StateChannelRead.CREATE_FILE;
 
                 // Команда запроса списка фалов в указанной директории
                 case GET_LIST:
-                    sendAnswerToClient(ctx, createUserListRepository(params.get("path"), user.getUsedSize()));
+                    sendAnswerToClient(ctx, createUserListRepository(params.get("path"), user));
                     return StateChannelRead.WAIT_META_DATA;
 
                 // Команда создания новой директории
@@ -109,7 +120,7 @@ public class CommandExecutor {
                     String dirPath = SERVER_DIR + params.get("path");
                     Path newDir = Path.of(dirPath);
                     Files.createDirectories(newDir);
-                    updateCurrentListRepository(dirPath, ctx, user.getUsedSize());
+                    updateCurrentListRepository(dirPath, ctx, user);
                     return StateChannelRead.WAIT_META_DATA;
 
                 // Команда удаления файла
@@ -120,6 +131,7 @@ public class CommandExecutor {
                     String filePath = SERVER_DIR + params.get("path");
                     Path delPath = Path.of(filePath);
 
+
                     long delSize = Files.size(delPath);
                     int size = (int) delSize / 1024;
                     if (delSize % 1024 > 0) size++;
@@ -128,7 +140,7 @@ public class CommandExecutor {
                     Files.delete(delPath);
                     user.setUsedSize(newSize);
                     db.updateUserCurrentSize(newSize, user);
-                    updateCurrentListRepository(filePath, ctx, newSize);
+                    updateCurrentListRepository(filePath, ctx, user);
                     return StateChannelRead.WAIT_META_DATA;
 
                 // Команда загрузки файла из репозитория
@@ -136,26 +148,29 @@ public class CommandExecutor {
                     String fileName;
                     dirPath = params.get("path");
                     int endPath = dirPath.lastIndexOf(File.separator);
-                    if(endPath > 0) {
+                    if (endPath > 0) {
                         fileName = dirPath.substring(endPath + 1);
 
                         String download = SERVER_DIR + params.get("path");
                         sendAnswerToClient(ctx, String.format("<command=download,path=%s,size=%d>",
                                 fileName, Files.size(Path.of(download))));
-                        byte[] mas = new byte[0];
-                        try {
-                            Path downPath = Path.of(download);
-                            mas = Files.readAllBytes(downPath);
+
+                        try (FileChannel inputChannel = FileChannel.open(Path.of(download))) {
+                            ByteBuffer buf = ByteBuffer.allocate(FILE_BLOCK_SIZE);
+                            while (inputChannel.read(buf) > 0) {
+                                buf.flip();
+                                ctx.writeAndFlush(Unpooled.wrappedBuffer(buf));
+                                buf.clear();
+                            }
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        ByteBuf outBuffer = ctx.channel().alloc().buffer();
-                        outBuffer.writeBytes(mas);
-                        ctx.writeAndFlush(outBuffer);
                     }
 
                     return StateChannelRead.WAIT_META_DATA;
             }
+        } catch (DirectoryNotEmptyException e) {
+            System.out.println("Directory not empty!!!");
         } catch (SQLException | IOException throwable) {
             throwable.printStackTrace();
         }
@@ -163,7 +178,7 @@ public class CommandExecutor {
     }
 
     // Создание листа корневого каталога клиента
-    public static String createUserListRepository(String repoPath, Integer size) {
+    public static String createUserListRepository(String repoPath, User user) {
         final String SERVER_DIR = "Server" + File.separator + "Repositories" + File.separator;
         Path myPath = Path.of(SERVER_DIR + repoPath);
 
@@ -172,16 +187,16 @@ public class CommandExecutor {
 
         StringBuffer stringBuffer = new StringBuffer();
         for (int i = 0; i < filesList.length; i++) {
-            if(i > 0) stringBuffer.append("&");
+            if (i > 0) stringBuffer.append("&");
             stringBuffer.append(filesList[i] + ":");
-            if(Files.isDirectory(Path.of(myPath.toString() + File.separator + filesList[i]))){
+            if (Files.isDirectory(Path.of(myPath.toString() + File.separator + filesList[i]))) {
                 stringBuffer.append("d");
             } else {
                 stringBuffer.append("f");
             }
         }
-        String listCommand = String.format("<command=filelist,path=%s,list=%s,used=%d>",
-                repoPath, stringBuffer.toString(), size);
+        String listCommand = String.format("<command=filelist,path=%s,list=%s,used=%d,limit=%d>",
+                repoPath, stringBuffer.toString(), user.getUsedSize(), user.getLimitSize());
         return listCommand;
     }
 
@@ -239,17 +254,17 @@ public class CommandExecutor {
         System.out.printf("%s %s\n", serverLog, user.getAddress());
     }
 
-    public static void sendAnswerToClient(ChannelHandlerContext ctx, String clientsAnswer){
+    public static void sendAnswerToClient(ChannelHandlerContext ctx, String clientsAnswer) {
         ctx.writeAndFlush(clientsAnswer);
     }
 
-    public static void updateCurrentListRepository(String path, ChannelHandlerContext ctx, Integer size) {
+    public static void updateCurrentListRepository(String path, ChannelHandlerContext ctx, User user) {
         int endPath = path.lastIndexOf(File.separator);
         String curDir = path.substring(0, endPath);
         endPath = curDir.indexOf(File.separator, 10);
         if (endPath > 0) {
             CommandExecutor.sendAnswerToClient(ctx,
-                    CommandExecutor.createUserListRepository(curDir.substring(endPath + 1), size));
+                    CommandExecutor.createUserListRepository(curDir.substring(endPath + 1), user));
         }
     }
 

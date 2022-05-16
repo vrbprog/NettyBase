@@ -3,6 +3,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+
 import java.io.IOException;
 
 public class MainApp extends Application {
@@ -69,7 +70,7 @@ public class MainApp extends Application {
         }
     }
 
-    public void showFileManager(String userSize) {
+    public void showFileManager(String userSize, String limitSize, String level) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/fileManager.fxml"));
             AnchorPane root = loader.load();
@@ -77,7 +78,8 @@ public class MainApp extends Application {
             fileManagerController = loader.getController();
             fileManagerController.setMainApp(this);
             fileManagerController.createDirController.setMainApp(this);
-            fileManagerController.setCurrentUserSize(userSize);
+
+            fileManagerController.setUserProfile(userSize, limitSize, level);
 
             primaryStage.setTitle("Clouds Storage");
             primaryStage.setResizable(false);
@@ -87,6 +89,7 @@ public class MainApp extends Application {
             e.printStackTrace();
         }
     }
+
     public LoginController getLoginController() {
         return loginController;
     }

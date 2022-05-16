@@ -19,12 +19,11 @@ public class ClientExecutor {
             case LOGIN:
                 System.out.println("Login");
                 res = params.get("result");
-                if("successful".equals(res)){
+                if ("successful".equals(res)) {
                     Platform.runLater(() -> {
-                        mainApp.showFileManager(params.get("used"));
+                        mainApp.showFileManager(params.get("used"), params.get("limit"), params.get("level"));
                     });
-                    //Platform.runLater(mainApp::showFileManager);
-                } else if("user_not_fined".equals(res)){
+                } else if ("user_not_fined".equals(res)) {
                     Platform.runLater(() -> {
                         mainApp.getLoginController().errorAuth();
                     });
@@ -33,34 +32,33 @@ public class ClientExecutor {
 
             case SIGN_UP:
                 res = params.get("result");
-                if("successful".equals(res)){
+                if ("successful".equals(res)) {
                     Platform.runLater(() -> {
-                        mainApp.showFileManager(params.get("used"));
+                        mainApp.showFileManager(params.get("used"), params.get("limit"), params.get("level"));
                     });
-                }else {
-                    if("busy_name".equals(res)){
+                } else {
+                    if ("busy_name".equals(res)) {
                         showErrorRegister(mainApp, "User with this name is already registered");
-                    }
-                    else if("busy_email".equals(res)){
+                    } else if ("busy_email".equals(res)) {
                         showErrorRegister(mainApp, "User with this email is already registered");
                     }
                 }
                 return StateChannelRead.WAIT_META_DATA;
 
             case FILE_LIST:
-                final String  curDir = params.get("path");
-                if(curDir.length() > 0) {
+                final String curDir = params.get("path");
+                if (curDir.length() > 0) {
                     Platform.runLater(() -> {
-                                mainApp.getFileManagerController().setMyRepoPath(Path.of(curDir));
-                            });
+                        mainApp.getFileManagerController().setMyRepoPath(Path.of(curDir));
+                    });
                     res = params.get("list");
                     boolean isDir;
                     List<FileModel> listDir = new ArrayList<>();
                     Map<String, String> filesList = new HashMap<>();
-                    if(res != null) {
-                        if(curDir.contains(File.separator)){
+                    if (res != null) {
+                        if (curDir.contains(File.separator)) {
                             listDir.add(new FileModel("...",
-                                    "img"+ File.separator + "up.png", true, true, false));
+                                    "img" + File.separator + "up.png", true, true, false));
                         }
                         String[] keyValueParamsArray = res.split("&");
                         for (String rawKeyValue : keyValueParamsArray) {
@@ -71,15 +69,15 @@ public class ClientExecutor {
                                 listDir.add(new FileModel(keyValueArr[0], getIcon(isDir), isDir, false, false));
                             }
                         }
-                    }
-                    else{
+                    } else {
                         listDir.add(new FileModel("...",
-                                "img"+ File.separator + "up.png", true, true, false));
+                                "img" + File.separator + "up.png", true, true, false));
                     }
                     Platform.runLater(() -> {
                         List<FileModel> sortedList = new ArrayList<>();
                         mainApp.getFileManagerController().initServerListFiles(sortingListFile(listDir, sortedList));
-                        mainApp.getFileManagerController().setCurrentUserSize(params.get("used"));
+                        mainApp.getFileManagerController().setUserProfile(params.get("used"), params.get("limit"),
+                                mainApp.getFileManagerController().getUserLevelLimit());
                     });
                 }
                 return StateChannelRead.WAIT_META_DATA;
@@ -90,13 +88,13 @@ public class ClientExecutor {
         return StateChannelRead.WAIT_META_DATA;
     }
 
-    private static void showErrorRegister(MainApp mainApp, String error){
+    private static void showErrorRegister(MainApp mainApp, String error) {
         Platform.runLater(() -> {
             mainApp.getRegisterController().showErrorMassage(error);
         });
     }
 
-     public static List<FileModel> sortingListFile(List<FileModel> list, List<FileModel> sortedList){
+    public static List<FileModel> sortingListFile(List<FileModel> list, List<FileModel> sortedList) {
 
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).isDir()) {

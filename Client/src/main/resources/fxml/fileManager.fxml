@@ -65,7 +65,7 @@
             </ImageView>
          </children>
       </Pane>
-      <Button fx:id="butUpload" layoutX="358.0" layoutY="574.0" mnemonicParsing="false" onAction="#onButtonUpload" prefHeight="44.0" prefWidth="150.0" text="  Upload" textFill="#0e47b2">
+      <Button fx:id="butUpload" layoutX="358.0" layoutY="590.0" mnemonicParsing="false" onAction="#onButtonUpload" prefHeight="44.0" prefWidth="150.0" text="  Upload" textFill="#0e47b2">
          <graphic>
             <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -76,7 +76,7 @@
          <font>
             <Font size="16.0" />
          </font></Button>
-      <Button fx:id="butDownload" layoutX="516.0" layoutY="574.0" mnemonicParsing="false" onAction="#onButtonDownload" prefHeight="38.0" prefWidth="150.0" text=" Download" textFill="#159711">
+      <Button fx:id="butDownload" layoutX="516.0" layoutY="590.0" mnemonicParsing="false" onAction="#onButtonDownload" prefHeight="38.0" prefWidth="150.0" text=" Download" textFill="#159711">
          <graphic>
             <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -87,7 +87,7 @@
          <font>
             <Font size="16.0" />
          </font></Button>
-      <Button fx:id="butDelete" layoutX="674.0" layoutY="574.0" mnemonicParsing="false" onAction="#onButtonDelete" prefHeight="38.0" prefWidth="150.0" text="   Delete" textFill="#f80505">
+      <Button fx:id="butDelete" layoutX="674.0" layoutY="590.0" mnemonicParsing="false" onAction="#onButtonDelete" prefHeight="38.0" prefWidth="150.0" text="   Delete" textFill="#f80505">
          <graphic>
             <ImageView disable="true" fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -119,18 +119,30 @@
             </ImageView>
          </children>
       </Pane>
-      <ProgressBar fx:id="progressSize" layoutX="820.0" layoutY="540.0" prefHeight="18.0" prefWidth="176.0" progress="0.2" />
-      <Text layoutX="902.0" layoutY="554.0" strokeType="OUTSIDE" strokeWidth="0.0" text="20 %" />
-      <Label layoutX="603.0" layoutY="540.0" prefHeight="17.0" prefWidth="118.0" text="Size of occupied space: ">
+      <ProgressBar fx:id="progressSize" layoutX="820.0" layoutY="540.0" prefHeight="18.0" prefWidth="176.0" progress="0.8" style="-fx-accent: yellow;" />
+      <Text fx:id="textPersent" fill="#1f9712" layoutX="902.0" layoutY="554.0" strokeType="OUTSIDE" strokeWidth="0.0" text="80 %" />
+      <Label layoutX="603.0" layoutY="540.0" prefHeight="17.0" prefWidth="118.0" text="Size of occupied space: " textFill="#2a64ea">
          <font>
             <Font size="11.0" />
          </font>
       </Label>
-      <Label layoutX="206.0" layoutY="540.0" prefHeight="17.0" prefWidth="386.0" text="Selected 0 Kb in 0 files">
+      <Label layoutX="206.0" layoutY="540.0" prefHeight="17.0" prefWidth="386.0" text="Selected 0 Kb in 0 files" textFill="#2a64ea">
          <font>
             <Font size="11.0" />
          </font>
       </Label>
-      <Label fx:id="labUsedSize" layoutX="721.0" layoutY="540.0" prefHeight="17.0" prefWidth="92.0" />
+      <Label fx:id="labUsedSize" layoutX="721.0" layoutY="540.0" prefHeight="17.0" prefWidth="92.0" textFill="#2a64ea" />
+      <Label fx:id="labInfoStatus" alignment="CENTER" contentDisplay="CENTER" layoutX="250.0" layoutY="566.0" prefHeight="17.0" prefWidth="691.0" text="Info" visible="false">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <ImageView fx:id="imgSucc" fitHeight="48.0" fitWidth="48.0" layoutX="845.0" layoutY="584.0" pickOnBounds="true" preserveRatio="true" visible="false">
+         <image>
+            <Image url="@../img/err.jpg" />
+         </image>
+      </ImageView>
+      <Label layoutX="824.0" layoutY="558.0" prefHeight="17.0" prefWidth="64.0" text="Your limit: " textFill="#2a64ea" />
+      <Label fx:id="labLimit" layoutX="888.0" layoutY="558.0" prefHeight="17.0" prefWidth="107.0" textFill="#2a64ea" />
    </children>
 </AnchorPane>

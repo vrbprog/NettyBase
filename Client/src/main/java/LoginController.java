@@ -35,7 +35,7 @@ public class LoginController implements Initializable {
     void onButtonLogin(ActionEvent event) {
 
         mainApp.getClient().sendCommand(String.format("<command=login,email=%s,password=%s>",
-                fieldEmail.getText().toLowerCase(),passField.getText()));
+                fieldEmail.getText().toLowerCase(), passField.getText()));
     }
 
     @Override
@@ -57,7 +57,7 @@ public class LoginController implements Initializable {
         this.mainApp = mainApp;
     }
 
-    public void errorAuth(){
+    public void errorAuth() {
         labErrorAuth.setVisible(true);
     }
 

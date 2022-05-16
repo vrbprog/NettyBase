@@ -1,5 +1,5 @@
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -7,14 +7,16 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringEncoder;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Paths;
 
 // Класс сетевого клиента на Netty
 public class NettyClient implements Runnable{
     private MainApp mainApp;
     private Channel channel;
     private EventLoopGroup eventLoopGroup;
+    private static final int FILE_BLOCK_SIZE = 1024 * 1024;
 
     public NettyClient(MainApp mainApp) {
         this.mainApp = mainApp;
@@ -48,23 +50,36 @@ public class NettyClient implements Runnable{
         }
     }
 
+    // Передача команды на сервер
     public void sendCommand(String command){
         channel.writeAndFlush(command);
     }
 
-    public void sendFile(String fileName){
+    // Передача файла на сервер с разделением на блоки размера FILE_BLOCK_SIZE
+    public void sendFile(String fileName) {
 
-        // TODO Refactoring this method for write file by blocks
-        byte[] mas = new byte[0];
-        try {
-            mas = Files.readAllBytes(Path.of(fileName));
+//        byte[] mas = new byte[0];
+//        try {
+//            mas = Files.readAllBytes(Path.of(fileName));
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        ByteBuf outBuffer = channel.alloc().buffer();
+//        outBuffer.writeBytes(mas);
+//        channel.writeAndFlush(outBuffer);
+//    }
 
+        try (FileChannel inputChannel = FileChannel.open(Paths.get(fileName))) {
+            ByteBuffer buf = ByteBuffer.allocate(FILE_BLOCK_SIZE);
+            while (inputChannel.read(buf) > 0) {
+                buf.flip();
+                channel.writeAndFlush(Unpooled.wrappedBuffer(buf));
+                buf.clear();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ByteBuf outBuffer = channel.alloc().buffer();
-        outBuffer.writeBytes(mas);
-        channel.writeAndFlush(outBuffer);
     }
 
     public void clientClose(){

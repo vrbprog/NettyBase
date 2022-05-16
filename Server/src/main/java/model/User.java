@@ -10,11 +10,13 @@ public class User {
     private SocketAddress address;
     private Integer limitSize;
     private Integer usedSize;
+    private Integer levelSubSir;
 
     public User() {
-        this.name = "user";
-        this.email = "email";
-        this.password = "password";
+        this.name = "anonymous_user";
+        this.email = "anonymous_email";
+        this.password = "anonymous_password";
+        this.usedSize = 0;
     }
 
     public String getName() {
@@ -63,5 +65,13 @@ public class User {
 
     public void setUsedSize(Integer usedSize) {
         this.usedSize = usedSize;
+    }
+
+    public Integer getLevelSubSir() {
+        return levelSubSir;
+    }
+
+    public void setLevelSubSir(Integer levelSubSir) {
+        this.levelSubSir = levelSubSir;
     }
 }

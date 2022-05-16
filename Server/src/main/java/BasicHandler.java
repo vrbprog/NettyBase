@@ -6,7 +6,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import model.MetaData;
 import model.User;
-import dataBase.DataBaseHandler;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -121,7 +120,7 @@ public class BasicHandler extends ChannelInboundHandlerAdapter {
                             e.printStackTrace();
                         }
                         user.setUsedSize(newSize);
-                        CommandExecutor.updateCurrentListRepository(filePath, ctx, newSize);
+                        CommandExecutor.updateCurrentListRepository(filePath, ctx, user);
                         stateChannelRead = StateChannelRead.WAIT_META_DATA;
                     } else {
                         stateChannelRead = StateChannelRead.READING_FILE;

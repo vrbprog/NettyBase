@@ -38,8 +38,7 @@ public class NettyFileServer {
             System.out.println("Netty FileServer finished");
         } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
             try {

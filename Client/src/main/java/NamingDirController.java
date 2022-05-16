@@ -25,7 +25,7 @@ public class NamingDirController {
     @FXML
     void onButtonCreate(ActionEvent event) {
 
-        if(fieldNewDir.getText().length() > 0) {
+        if (fieldNewDir.getText().length() > 0) {
             if (isAlphanumeric(fieldNewDir.getText())) {
                 showCreateDirButton();
 
@@ -43,7 +43,7 @@ public class NamingDirController {
         showCreateDirButton();
     }
 
-    private void showCreateDirButton(){
+    private void showCreateDirButton() {
         Node[] nodeNamingDir = new Node[1];
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/createDir.fxml"));
@@ -62,18 +62,16 @@ public class NamingDirController {
         }
     }
 
-    private boolean isAlphanumeric(String str)
-    {
+    private boolean isAlphanumeric(String str) {
         char[] charArray = str.toCharArray();
-        for(char c:charArray)
-        {
+        for (char c : charArray) {
             if (!Character.isLetterOrDigit(c))
                 return false;
         }
         return true;
     }
 
-    private void errorNamingDir(){
+    private void errorNamingDir() {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
         alert.setHeaderText("Error naming new directory");

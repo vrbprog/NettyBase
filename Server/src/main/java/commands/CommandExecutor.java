@@ -81,7 +81,7 @@ public class CommandExecutor {
                                     db.insertUserToBase(user); // Внесение пользователя в БД
                                     user.setLimitSize(ConfigDB.DEFAULT_LIMIT_SIZE);
                                     user.setUsedSize(0);
-                                    user.setLevelSubSir(res.getInt(ConfigDB.DEFAULT_DIR_LEV));
+                                    user.setLevelSubSir(ConfigDB.DEFAULT_DIR_LEV);
                                     log("SignUp: User " + "\"" + user.getName() + "\"" + " registered in the database", user);
                                     sendAnswerToClient(ctx, String.format("<command=signup,result=successful,used=%d,limit=%d,level=%d>",
                                             user.getUsedSize(), user.getLimitSize(), user.getLevelSubSir()));

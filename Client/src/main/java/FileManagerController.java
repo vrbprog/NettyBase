@@ -36,6 +36,11 @@ public class FileManagerController implements Initializable {
     public NamingDirController namingDirController;
     private int levelLimit;
     private int currentLevel = 0;
+    private int currentUserSize = 0;
+    private int currentUserLimit = 0;
+    private int numSelectFiles = 0;
+    private int sizeSelectFiles = 0;
+    private int numSelectServerFiles = 0;
 
     @FXML
     private ScrollPane clientsFilesScroll;
@@ -63,6 +68,9 @@ public class FileManagerController implements Initializable {
 
     @FXML
     private Label labLimit;
+
+    @FXML
+    private Label labSelectFiles;
 
     @FXML
     private Text textPersent;
@@ -109,6 +117,7 @@ public class FileManagerController implements Initializable {
                 selectClientNodes[i] = false;
             }
         }
+        resetInfoSelectedFiles();
     }
 
     @FXML
@@ -126,22 +135,23 @@ public class FileManagerController implements Initializable {
             serverNodes[i].setStyle("-fx-background-color:  #FFFFFF");
             selectServerNodes[i] = false;
         }
+        resetInfoSelectedServerFiles();
     }
 
     @FXML
     void onButtonDelete(ActionEvent event) {
         for (int i = 0; i < currentServerDir.size(); i++) {
             if (currentServerDir.get(i).isSelect()) {
-                //if (!currentServerDir.get(i).isDir()) {
-                    mainApp.getClient().sendCommand(String.format("<command=delete,path=%s>",
-                            myRepoPath + File.separator + currentServerDir.get(i).getFileName()));
-                //}
+                mainApp.getClient().sendCommand(String.format("<command=delete,path=%s>",
+                        myRepoPath + File.separator + currentServerDir.get(i).getFileName()));
+
             }
 
             currentServerDir.get(i).setSelect(false);
             serverNodes[i].setStyle("-fx-background-color:  #FFFFFF");
             selectServerNodes[i] = false;
         }
+        resetInfoSelectedServerFiles();
     }
 
     public void setMainApp(MainApp mainApp) {
@@ -265,14 +275,37 @@ public class FileManagerController implements Initializable {
                 }
             });
             nodes[i].setOnMousePressed(mouseEvent -> {
-                if (!select[j]) {
-                    nodes[j].setStyle("-fx-background-color:  #7EA9FF");
-                    list.get(j).setSelect(true);
-                } else {
-                    nodes[j].setStyle("-fx-background-color:  #FFFFFF");
-                    list.get(j).setSelect(false);
+                if (!list.get(j).isDir()) {
+                    try {
+                        if (!select[j]) {
+                            nodes[j].setStyle("-fx-background-color:  #7EA9FF");
+                            list.get(j).setSelect(true);
+
+                            if (isServerList) {
+                                incrementSelectedServerFiles();
+                            } else {
+                                sizeSelectFiles += Files.size(Path.of(myPath.toString() + File.separator + list.get(j).getFileName()));
+                                numSelectFiles++;
+                                showInfoSelectedFiles(numSelectFiles, sizeSelectFiles);
+                            }
+
+                        } else {
+                            nodes[j].setStyle("-fx-background-color:  #FFFFFF");
+                            list.get(j).setSelect(false);
+
+                            if (isServerList) {
+                                decrementSelectedServerFiles();
+                            } else {
+                                sizeSelectFiles -= Files.size(Path.of(myPath.toString() + File.separator + list.get(j).getFileName()));
+                                numSelectFiles--;
+                                showInfoSelectedFiles(numSelectFiles, sizeSelectFiles);
+                            }
+                        }
+                        select[j] = !select[j];
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-                select[j] = !select[j];
             });
             nodes[i].setOnMouseClicked(MouseEvent -> {
                 if (MouseEvent.getClickCount() % 2 == 0) {
@@ -321,9 +354,11 @@ public class FileManagerController implements Initializable {
         if (isServerList) {
             serverNodes = nodes;
             selectServerNodes = select;
+            resetInfoSelectedServerFiles();
         } else {
             clientsNodes = nodes;
             selectClientNodes = select;
+            resetInfoSelectedFiles();
         }
 
         if(currentLevel > 0) {
@@ -346,10 +381,12 @@ public class FileManagerController implements Initializable {
 
     public void setCurrentUserSize(String size) {
         labUsedSize.setText(size + " Kb");
+        currentUserSize = Integer.parseInt(size);
     }
 
     public void setCurrentUserLimit(String limit) {
         labLimit.setText(limit + " Kb");
+        currentUserLimit = Integer.parseInt(limit);
     }
 
     public void setProgress(double progress) {
@@ -370,13 +407,6 @@ public class FileManagerController implements Initializable {
         setUserLevelLimit(Integer.parseInt(level));
     }
 
-//    private boolean isNotEmptyDirectory(String dir) throws IOException {
-//        Path path = Path.of(dir);
-//        try (var entries = Files.list(path)) {
-//            return entries.findFirst().isPresent();
-//        }
-//    }
-
     public void setUserLevelLimit(int limit){
         levelLimit = limit;
     }
@@ -385,7 +415,41 @@ public class FileManagerController implements Initializable {
         return String.valueOf(levelLimit);
     }
 
-    public void setUserCurrentLevel(int limit){
-        levelLimit = limit;
+    public void showInfoSelectedFiles(int num, int size){
+        labSelectFiles.setText(String.format("Selected %d Kb in %d files",size/1024,num));
+
+        if(size/1024 > currentUserLimit - currentUserSize) {
+            butUpload.setDisable(true);
+            labSelectFiles.setStyle("-fx-text-fill:  #FF0000");
+        } else {
+            butUpload.setDisable(num <= 0);
+            labSelectFiles.setStyle("-fx-text-fill:  #2a64ea");
+        }
+    }
+
+    public void resetInfoSelectedFiles(){
+        numSelectFiles = 0;
+        sizeSelectFiles = 0;
+        showInfoSelectedFiles(numSelectFiles, sizeSelectFiles);
+    }
+
+    public void resetInfoSelectedServerFiles() {
+        numSelectServerFiles = 0;
+        butDelete.setDisable(true);
+        butDownload.setDisable(true);
+    }
+
+    public void incrementSelectedServerFiles() {
+        numSelectServerFiles++;
+        butDelete.setDisable(false);
+        butDownload.setDisable(false);
+    }
+
+    public void decrementSelectedServerFiles() {
+        numSelectServerFiles--;
+        if(numSelectServerFiles <= 0) {
+            butDelete.setDisable(true);
+            butDownload.setDisable(true);
+        }
     }
 }

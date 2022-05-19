@@ -65,7 +65,7 @@
             </ImageView>
          </children>
       </Pane>
-      <Button fx:id="butUpload" layoutX="358.0" layoutY="590.0" mnemonicParsing="false" onAction="#onButtonUpload" prefHeight="44.0" prefWidth="150.0" text="  Upload" textFill="#0e47b2">
+      <Button fx:id="butUpload" disable="true" layoutX="358.0" layoutY="590.0" mnemonicParsing="false" onAction="#onButtonUpload" prefHeight="44.0" prefWidth="150.0" text="  Upload" textFill="#0e47b2">
          <graphic>
             <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -126,7 +126,7 @@
             <Font size="11.0" />
          </font>
       </Label>
-      <Label layoutX="206.0" layoutY="540.0" prefHeight="17.0" prefWidth="386.0" text="Selected 0 Kb in 0 files" textFill="#2a64ea">
+      <Label fx:id="labSelectFiles" layoutX="206.0" layoutY="540.0" prefHeight="17.0" prefWidth="386.0" text="Selected 0 Kb in 0 files" textFill="#2a64ea">
          <font>
             <Font size="11.0" />
          </font>

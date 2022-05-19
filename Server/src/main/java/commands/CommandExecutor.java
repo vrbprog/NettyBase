@@ -101,69 +101,77 @@ public class CommandExecutor {
                     log("User " + user.getName() + " upload file "
                             + params.get("path") + " on Serer", user);
 
-//                    Path path = Path.of(params.get("path"));
-//                    System.out.println(path.getParent());
-//                    System.out.println(path.getParent().getParent());
-
-                    return StateChannelRead.CREATE_FILE;
+                    if (checkAuthorization(user, params))
+                        return StateChannelRead.CREATE_FILE;
+                    else
+                        return StateChannelRead.WAIT_META_DATA;
 
                 // Команда запроса списка фалов в указанной директории
                 case GET_LIST:
-                    sendAnswerToClient(ctx, createUserListRepository(params.get("path"), user));
+                    if (checkAuthorization(user, params))
+                        sendAnswerToClient(ctx, createUserListRepository(params.get("path"), user));
                     return StateChannelRead.WAIT_META_DATA;
 
                 // Команда создания новой директории
                 case MAKE_DIR:
-                    System.out.print("MAKE_DIR ");
-                    System.out.println(params.get("path"));
 
-                    String dirPath = SERVER_DIR + params.get("path");
-                    Path newDir = Path.of(dirPath);
-                    Files.createDirectories(newDir);
-                    updateCurrentListRepository(dirPath, ctx, user);
+                    String dirPath;
+                    if (checkAuthorization(user, params)) {
+                        System.out.print("MAKE_DIR ");
+                        System.out.println(params.get("path"));
+
+                        dirPath = SERVER_DIR + params.get("path");
+                        Path newDir = Path.of(dirPath);
+                        Files.createDirectories(newDir);
+                        updateCurrentListRepository(dirPath, ctx, user);
+                    }
                     return StateChannelRead.WAIT_META_DATA;
 
                 // Команда удаления файла
                 case DELETE:
-                    System.out.print("DELETE ");
-                    System.out.println(params.get("path"));
+                    if (checkAuthorization(user, params)) {
+                        System.out.print("DELETE ");
+                        System.out.println(params.get("path"));
 
-                    String filePath = SERVER_DIR + params.get("path");
-                    Path delPath = Path.of(filePath);
+                        String filePath = SERVER_DIR + params.get("path");
+                        Path delPath = Path.of(filePath);
 
 
-                    long delSize = Files.size(delPath);
-                    int size = (int) delSize / 1024;
-                    if (delSize % 1024 > 0) size++;
-                    int newSize = user.getUsedSize() - size;
+                        long delSize = Files.size(delPath);
+                        int size = (int) delSize / 1024;
+                        if (delSize % 1024 > 0) size++;
+                        int newSize = user.getUsedSize() - size;
 
-                    Files.delete(delPath);
-                    user.setUsedSize(newSize);
-                    db.updateUserCurrentSize(newSize, user);
-                    updateCurrentListRepository(filePath, ctx, user);
+                        Files.delete(delPath);
+                        user.setUsedSize(newSize);
+                        db.updateUserCurrentSize(newSize, user);
+                        updateCurrentListRepository(filePath, ctx, user);
+                    }
                     return StateChannelRead.WAIT_META_DATA;
 
                 // Команда загрузки файла из репозитория
                 case DOWNLOAD:
-                    String fileName;
-                    dirPath = params.get("path");
-                    int endPath = dirPath.lastIndexOf(File.separator);
-                    if (endPath > 0) {
-                        fileName = dirPath.substring(endPath + 1);
+                    if (checkAuthorization(user, params)) {
+                        String fileName;
+                        dirPath = params.get("path");
+                        int endPath = dirPath.lastIndexOf(File.separator);
+                        if (endPath > 0) {
+                            fileName = dirPath.substring(endPath + 1);
 
-                        String download = SERVER_DIR + params.get("path");
-                        sendAnswerToClient(ctx, String.format("<command=download,path=%s,size=%d>",
-                                fileName, Files.size(Path.of(download))));
+                            String download = SERVER_DIR + params.get("path");
+                            sendAnswerToClient(ctx, String.format("<command=download,path=%s,size=%d>",
+                                    fileName, Files.size(Path.of(download))));
 
-                        try (FileChannel inputChannel = FileChannel.open(Path.of(download))) {
-                            ByteBuffer buf = ByteBuffer.allocate(FILE_BLOCK_SIZE);
-                            while (inputChannel.read(buf) > 0) {
-                                buf.flip();
-                                ctx.writeAndFlush(Unpooled.wrappedBuffer(buf));
-                                buf.clear();
+                            try (FileChannel inputChannel = FileChannel.open(Path.of(download))) {
+                                ByteBuffer buf = ByteBuffer.allocate(FILE_BLOCK_SIZE);
+                                while (inputChannel.read(buf) > 0) {
+                                    buf.flip();
+                                    ctx.writeAndFlush(Unpooled.wrappedBuffer(buf));
+                                    buf.clear();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
-                        } catch (IOException e) {
-                            e.printStackTrace();
                         }
                     }
 
@@ -258,6 +266,7 @@ public class CommandExecutor {
         ctx.writeAndFlush(clientsAnswer);
     }
 
+    // Обновление списка файлов текущей директории
     public static void updateCurrentListRepository(String path, ChannelHandlerContext ctx, User user) {
         int endPath = path.lastIndexOf(File.separator);
         String curDir = path.substring(0, endPath);
@@ -266,6 +275,22 @@ public class CommandExecutor {
             CommandExecutor.sendAnswerToClient(ctx,
                     CommandExecutor.createUserListRepository(curDir.substring(endPath + 1), user));
         }
+    }
+
+    // Получение корневой директории из параметра пути в команде
+    private static Path getRootRepo(Path path) {
+        Path next = path;
+        while (true){
+            if(next.getParent() != null)
+                next = next.getParent();
+            else break;
+        }
+        return next;
+    }
+
+    // Проверка соответствия имени текущего пользователя и имени репозитория в котором будут производиться действия
+    private static boolean checkAuthorization(User user, Map<String, String> params) {
+        return user.getName().equals(getRootRepo(Path.of(params.get("path"))).toString());
     }
 
 }
